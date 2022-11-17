@@ -129,8 +129,6 @@ export class HomeComponent implements OnInit {
     await Promise.all(this.todoLists.map(async (list: TodoList) => {
       const listeName: string = list.title
 
-      console.log(">listeName >> ", listeName)
-
       await firstValueFrom(this.crudApiService.DeleteListRessource(listeName))
     }));
   }
@@ -142,84 +140,15 @@ export class HomeComponent implements OnInit {
   async sychronize() {
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
 
-      console.log("sychronize")
-
       await this.synchroService.indexedDBToServer()
-
-      console.log("💪 synchronise local to server ")
 
       await this.crudDbService.resetDatabase()
 
-      console.log("💪 reset local database")
-
       await firstValueFrom(this.getAllTodosListItemsAPI())
-
-      console.log("💪 récupère toutes les datas du serveurs", this.todoLists)
 
       await this.synchroService.serverToIndexedDB(this.todoLists)
 
-      console.log("💪 synchro Server To local")
-
       this.readDatas()
-
-      console.log("💪 refresh liste")
-
-      /** reste la synchro serverToIndexedDB */
-
-      /** synchronise local to server */
-      // this.synchroService.indexedDBToServer().subscribe((datas: any) => {
-      //   console.log("💪 synchronise local to server")
-      //   this.crudDbService.resetDatabase().subscribe(() => {
-      //     console.log("💪 reset local database")
-      //     /** récupère toutes les datas du serveurs */
-      //     this.getAllTodosListItemsAPI().subscribe((datas) => {
-      //       console.log("💪 récupère toutes les datas du serveurs")
-
-      //       this.synchroService.serverToIndexedDB(this.todoLists).subscribe(() => {
-      //         console.log("💪 synchro Server To local")
-
-      //         this.readDatas()
-
-      //         console.log("💪 refresh liste")
-      //       })
-      //     })
-
-      //   })
-      // })
-
-
-
-
-
-
-
-
-
-
-      /** ancien codes pas optimisés */
-
-      // setTimeout(() => {
-
-      //   /** reset local database */
-      //   console.log("💪 reset local database")
-      //   // this.resetDatabase().then(() => {
-      //   this.crudDbService.resetDatabase().subscribe(() => {
-
-      //     /** synchro Server To local  */
-      //     console.log("💪 synchro Server To local")
-
-      //     this.getAllTodosListItemsAPI()
-
-      //     setTimeout(() => {
-      //       this.synchroService.serverToIndexedDB(this.todoLists)
-
-      //       setTimeout(() => {
-      //         /** refresh liste */
-      //         this.readDatas()
-      //       }, 1000)
-      //     }, 1000)
-      //   })
-      // }, 1000);
     } else {
       window.alert("Vous devez être connecté au réseau pour synchroniser les données de l'application.")
     }
