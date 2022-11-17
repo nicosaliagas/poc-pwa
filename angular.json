@@ -17,6 +17,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "preserveSymlinks": true,
             "outputPath": "dist/poc-pwa",
             "index": "src/index.html",
             "main": "src/main.ts",
@@ -25,12 +26,15 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "serviceWorker": true,
+            "ngswConfigPath": "ngsw-config.json"
           },
           "configurations": {
             "production": {
@@ -55,6 +59,12 @@
               "outputHashing": "all"
             },
             "development": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.dev.ts"
+                }
+              ],
               "buildOptimizer": false,
               "optimization": false,
               "vendorChunk": true,
@@ -67,6 +77,13 @@
         },
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "poc-pwa:build",
+            "port": 2022,
+            "ssl": true,
+            "sslCert": ".ssl/localhost.crt",
+            "sslKey": ".ssl/localhost.key"
+          },
           "configurations": {
             "production": {
               "browserTarget": "poc-pwa:build:production"
@@ -93,7 +110,8 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "src/manifest.webmanifest"
             ],
             "styles": [
               "src/styles.scss"
@@ -102,6 +120,14 @@
           }
         }
       }
+    }
+  },
+  "cli": {
+    "analytics": "19e82b86-ca66-4fbf-bdeb-baed08ddbb85",
+    "cache": {
+      "enabled": true,
+      "path": ".cache",
+      "environment": "all"
     }
   }
 }

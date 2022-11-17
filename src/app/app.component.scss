@@ -1,0 +1,9 @@
+.toolbar {
+    &.online {
+        background-color: rgb(43, 171, 43) !important;
+    }
+    
+    &.offline {
+        background-color: rgb(213, 24, 24) !important;
+    }
+}
