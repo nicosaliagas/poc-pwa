@@ -32,16 +32,18 @@ export class ItemListComponent {
 
   /** création de l'item de la liste */
   public addItem() {
-    if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-      this.crudApiService.NewListRessouce(this.todoList.title, this.itemName).pipe(
-      ).subscribe(() => {
-        this.readDatas()
-      })
-    } else {
-      this.crudDbService.addListItem(this.todoList.id, this.itemName).subscribe(() => {
-        this.readDatas()
-      })
-    }
+    // if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
+    this.crudApiService.NewListRessouce(this.todoList.title, this.itemName, this.todoList.id).pipe(
+    ).subscribe(() => {
+      console.log("Retour au subscribe dans ItemList + refresh")
+
+      this.readDatas()
+    })
+    // } else {
+    //   this.crudDbService.addListItem(this.todoList.id, this.itemName).subscribe(() => {
+    //     this.readDatas()
+    //   })
+    // }
   }
 
   private readDatas() {

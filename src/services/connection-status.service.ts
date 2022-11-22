@@ -11,8 +11,8 @@ export enum IConnectionStatusValue {
 })
 export class ConnectionStatusService {
     public onConnectionStatutUpdated: BehaviorSubject<IConnectionStatusValue> = new BehaviorSubject<IConnectionStatusValue>(IConnectionStatusValue.OFFLINE);
-
-    // private networkStatus: boolean = false;
+    public networkStatus!: IConnectionStatusValue;
+    
     private networkStatus$: Subscription = Subscription.EMPTY;
 
     constructor() {
@@ -27,7 +27,9 @@ export class ConnectionStatusService {
         )
             .pipe(map(() => navigator.onLine))
             .subscribe(status => {
-                this.onConnectionStatutUpdated.next(status ? IConnectionStatusValue.ONLINE : IConnectionStatusValue.OFFLINE)
+                this.networkStatus = status ? IConnectionStatusValue.ONLINE : IConnectionStatusValue.OFFLINE
+
+                this.onConnectionStatutUpdated.next(this.networkStatus)
             });
     }
 }

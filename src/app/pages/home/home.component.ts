@@ -1,9 +1,10 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { StringService } from 'cocori-ng/src/feature-core';
-import { firstValueFrom, from, map, mergeMap, Observable, Subject, toArray } from 'rxjs';
+import { firstValueFrom, from, map, mergeMap, Observable, toArray } from 'rxjs';
 import { CrudApiService } from 'src/services/crud-api.service';
 import { TodoList } from 'src/services/db';
 
+import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
 import { SynchroService } from '../../../services/synchro.service';
@@ -23,6 +24,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private connectionStatusService: ConnectionStatusService,
     private crudApiService: CrudApiService,
+    private cacheableService: CacheableService,
     private synchroService: SynchroService,
     private crudDbService: CrudDbService,
     private cdr: ChangeDetectorRef,) { }
@@ -32,18 +34,24 @@ export class HomeComponent implements OnInit {
     this.connectionStatusService.onConnectionStatutUpdated.subscribe((data: IConnectionStatusValue) => {
       this.connectionStatus = data
 
-      this.readDatas()
+      this.getListsDatas()
     })
   }
 
-  private readDatas() {
-    this.todoLists = []
+  private async getListsDatas() {
+    const datas = await this.cacheableService.cacheable(() => this.getListsItemAPI(), 'listsItems', { "todoLists": [] })
 
-    if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-      this.getAllTodosListItemsAPI()
-    } else {
-      this.getAllTodosListItemsIndexedDb()
-    }
+    console.log("todoLists from api >> ", datas)
+
+    this.todoLists = datas.todoLists
+
+    this.cdr.detectChanges()
+
+    // if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
+    // this.getListsItemAPI()
+    // } else {
+    // this.getAllTodosListItemsIndexedDb()
+    // }
   }
 
   private getAllTodosListItemsIndexedDb() {
@@ -58,13 +66,11 @@ export class HomeComponent implements OnInit {
     this.cdr.detectChanges()
   }
 
-  private getAllTodosListItemsAPI(): Observable<any> {
-    var subject = new Subject<TodoList[]>();
+  private getListsItemAPI(): Observable<any> {
 
     this.todoLists.splice(0, this.todoLists.length)
 
-    /** all the lists created */
-    this.crudApiService.GetCrucrudInfos('').pipe(
+    return this.crudApiService.GetCrucrudInfos('').pipe(
       mergeMap((lists: string[]) =>
         // `from` emits each contact separately
         from(lists).pipe(
@@ -75,16 +81,38 @@ export class HomeComponent implements OnInit {
           // add the newly fetched data to original result
           map(todoLists => ({ ...this.todoLists, todoLists })),
         ))
-    ).subscribe((datas: { todoLists: TodoList[] }) => {
-      this.todoLists = datas.todoLists
-
-      this.cdr.detectChanges()
-
-      subject.next(datas.todoLists);
-    })
-
-    return subject.asObservable();
+    )
   }
+
+  // private getListsItemAPI(): Observable<any> {
+  //   var subject = new Subject<TodoList[]>();
+
+  //   this.todoLists.splice(0, this.todoLists.length)
+
+  //   /** all the lists created */
+  //   this.crudApiService.GetCrucrudInfos('').pipe(
+  //     mergeMap((lists: string[]) =>
+  //       // `from` emits each contact separately
+  //       from(lists).pipe(
+  //         // load each contact
+  //         mergeMap((list: string) => this.getListTodoItems(list)),
+  //         // collect all contacts into an array
+  //         toArray(),
+  //         // add the newly fetched data to original result
+  //         map(todoLists => ({ ...this.todoLists, todoLists })),
+  //       ))
+  //   ).subscribe((datas: { todoLists: TodoList[] }) => {
+  //     this.todoLists = datas.todoLists
+
+  //     console.log("todoLists from api >> ", this.todoLists)
+
+  //     this.cdr.detectChanges()
+
+  //     subject.next(datas.todoLists);
+  //   })
+
+  //   return subject.asObservable();
+  // }
 
   /**
    * It takes a list name as a parameter, calls the GetCrucrudInfos function from the crudApiService,
@@ -105,23 +133,22 @@ export class HomeComponent implements OnInit {
       .replaceAllAccentByNonAccentCharacters()
       .toString()
 
-    if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-      this.crudApiService.NewListRessouce(this.listName).pipe(
-      ).subscribe((datas: any) => {
-        this.readDatas()
-      })
-    } else {
-      this.crudDbService.addList(this.listName).subscribe(() => {
-        this.readDatas()
-      })
-    }
+    // if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
+    this.crudApiService.NewListRessouce(this.listName).subscribe(
+      () => {
+        this.getListsDatas()
+      }
+    )
+    // } else {
+    //   this.crudDbService.addList(this.listName).subscribe(() => this.readDatas())
+    // }
   }
 
   async resetLocalDatabase() {
     await this.crudDbService.resetDatabase()
 
     if (this.connectionStatus === IConnectionStatusValue.OFFLINE) {
-      this.readDatas()
+      this.getListsDatas()
     }
   }
 
@@ -144,11 +171,11 @@ export class HomeComponent implements OnInit {
 
       await this.crudDbService.resetDatabase()
 
-      await firstValueFrom(this.getAllTodosListItemsAPI())
+      await firstValueFrom(this.getListsItemAPI())
 
       await this.synchroService.serverToIndexedDB(this.todoLists)
 
-      this.readDatas()
+      this.getListsDatas()
     } else {
       window.alert("Vous devez être connecté au réseau pour synchroniser les données de l'application.")
     }

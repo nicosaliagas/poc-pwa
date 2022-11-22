@@ -9,6 +9,12 @@ const routes: Routes = [
       import('./pages/home/home.module').then((mod) => mod.HomeModule),
     data: { title: `Home` },
   },
+  {
+    path: 'readonly',
+    loadChildren: () =>
+      import('./pages/readonly/readonly.module').then((mod) => mod.ReadonlyModule),
+    data: { title: `Page lecture seule` },
+  },
 ];
 
 @NgModule({

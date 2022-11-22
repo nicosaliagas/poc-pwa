@@ -5,6 +5,7 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "server": "http-server -p 8080 -c-1 dist/poc-pwa --cors --ssl -C .ssl/localhost.crt -K .ssl/localhost.key",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

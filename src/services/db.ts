@@ -24,15 +24,22 @@ export interface TodoItem {
     recordType?: string;
 }
 
+export interface Cacheable {
+    key: string
+    value: string;
+}
+
 export class AppDB extends Dexie {
     todoItems!: Table<TodoItem, number>;
     todoLists!: Table<TodoList, number>;
+    cacheable!: Table<Cacheable, string>;
 
     constructor() {
         super('PwaDb');
-        this.version(9).stores({
+        this.version(12).stores({
             todoLists: '++id, recordType',
             todoItems: '++id, todoListId, recordType',
+            cacheable: 'key',
         });
         // this.on('populate', () => this.populate());
         this.on('populate', () => null );
@@ -62,6 +69,7 @@ export class AppDB extends Dexie {
         await db.transaction('rw', 'todoItems', 'todoLists', () => {
             this.todoItems.clear();
             this.todoLists.clear();
+            this.cacheable.clear();
             // this.populate();
         });
     }

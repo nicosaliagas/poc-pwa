@@ -9,7 +9,9 @@ import { HandleUnrecoverableStateService } from 'src/services/handle-unrecoverab
 import { PromptUpdateService } from 'src/services/prompt-update.service';
 
 import { environment } from '../environments/environment';
+import { DatasetsService } from '../services/datasets.service';
 import { EnvironmentLoaderService } from '../services/environment-loader.service';
+import { EnvironmentService } from '../services/environment.service';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
@@ -33,7 +35,7 @@ import { AppComponent } from './app.component';
     {
       provide: APP_INITIALIZER,
       useFactory: LoadEnvironmentFactory,
-      deps: [EnvironmentLoaderService, PromptUpdateService, HandleUnrecoverableStateService, CheckForUpdateService],
+      deps: [EnvironmentLoaderService, PromptUpdateService, DatasetsService, HandleUnrecoverableStateService, CheckForUpdateService, EnvironmentService],
       multi: true
     },
   ],
