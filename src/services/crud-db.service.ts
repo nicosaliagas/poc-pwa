@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { HelperService } from 'cocori-ng/src/feature-core';
 import { liveQuery } from 'dexie';
 import { forkJoin, from, map, Observable, switchMap } from 'rxjs';
 import { db, ISynchroRecordType, TodoItem, TodoList } from 'src/services/db';
@@ -7,6 +8,9 @@ import { db, ISynchroRecordType, TodoItem, TodoList } from 'src/services/db';
     providedIn: 'root'
 })
 export class CrudDbService {
+
+    constructor(private helperService: HelperService) {
+    }
 
     public getRecords(): Observable<TodoList[]> {
         return from(liveQuery(() => db.todoLists.toArray())).pipe(
@@ -33,6 +37,7 @@ export class CrudDbService {
 
     public addList(listName: string): Observable<any> {
         return from(db.todoLists.add({
+            id: listName,
             title: listName,
             recordType: ISynchroRecordType.ADD,
         }))
@@ -40,6 +45,7 @@ export class CrudDbService {
 
     public addListItem(listId: any, itemName: string): Observable<any> {
         return from(db.todoItems.add({
+            id: this.helperService.generateGuid(),
             title: itemName,
             todoListId: listId,
             recordType: ISynchroRecordType.ADD,
