@@ -4,7 +4,7 @@ import { firstValueFrom, from, map, mergeMap, Observable, Subject, toArray } fro
 
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { CrudDbService } from './crud-db.service';
-import { Cacheable, db, TodoItem, TodoList } from './db';
+import { Cacheable, db, ISynchroRecordType, TodoItem, TodoList } from './db';
 import { EnvironmentService } from './environment.service';
 
 @Injectable({
@@ -31,7 +31,7 @@ export class CrudApiService {
     }
 
     public GetListsItemsAPI(): Observable<any> {
-        this.todoLists = this.todoLists.splice(0, this.todoLists.length)
+        this.todoLists.splice(0, this.todoLists.length)
 
         return this.GetListsItems().pipe(
             mergeMap((lists: string[]) =>
@@ -53,13 +53,8 @@ export class CrudApiService {
         )
     }
 
-    async NewListRessouceX(listName: string, itemTitle?: string, listId?: string) {
-        let datas!: TodoItem
+    async postList(listId: string) {
         const key = 'listsItems'
-
-        if (listName && itemTitle) {
-            datas = { id: this.helperService.generateGuid(), title: itemTitle, todoListId: listName }
-        }
 
         const cached: Cacheable[] = await db.cacheable.where({
             key: key,
@@ -67,7 +62,7 @@ export class CrudApiService {
 
         try {
             // retrieve the data from backend.
-            await firstValueFrom(<any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listName}`, datas, SkipHeaders.TRUE));
+            await firstValueFrom(<any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listId}`, {}, SkipHeaders.TRUE));
 
             console.log("post api")
         } catch {
@@ -75,9 +70,50 @@ export class CrudApiService {
 
                 console.log("Post fail, je suis hors ligne")
 
-                console.log("todoLists >> ", listName, this.todoLists)
+                this.todoLists.push(<TodoList>{ id: listId, title: listId, todoItems: [] })
 
-                const list: TodoList = <TodoList>this.todoLists.find((list: TodoList) => list.id === listName)
+                console.log("toutes les listes >> ", this.todoLists)
+
+                if (!cached.length) {
+                    await db.cacheable.add({
+                        key: key,
+                        value: JSON.stringify({ todoLists: this.todoLists }),
+                    })
+                } else {
+                    await db.cacheable.update(key, {
+                        key: key,
+                        value: JSON.stringify({ todoLists: this.todoLists }),
+                    })
+                }
+
+                await this.crudDbService.addList({ id: listId, title: listId, recordType: ISynchroRecordType.ADD })
+            }
+        }
+    }
+
+    async postItem(listId: string, itemTitle: string) {
+        let datas!: TodoItem
+        const key = 'listsItems'
+
+        datas = { id: this.helperService.generateGuid(), title: itemTitle, todoListId: listId }
+
+        const cached: Cacheable[] = await db.cacheable.where({
+            key: key,
+        }).toArray()
+
+        try {
+            // retrieve the data from backend.
+            await firstValueFrom(<any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listId}`, datas, SkipHeaders.TRUE));
+
+            console.log("post api")
+        } catch {
+            if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
+
+                console.log("Post fail, je suis hors ligne")
+
+                console.log("todoLists >> ", listId, this.todoLists)
+
+                const list: TodoList = <TodoList>this.todoLists.find((list: TodoList) => list.id === listId)
 
                 if (list) {
                     list.todoItems?.push(datas)
@@ -89,19 +125,17 @@ export class CrudApiService {
                 if (!cached.length) {
                     await db.cacheable.add({
                         key: key,
-                        value: JSON.stringify({todoLists: this.todoLists}),
+                        value: JSON.stringify({ todoLists: this.todoLists }),
                     })
                 } else {
                     await db.cacheable.update(key, {
                         key: key,
-                        value: JSON.stringify({todoLists: this.todoLists}),
+                        value: JSON.stringify({ todoLists: this.todoLists }),
                     })
                 }
 
-                /** METTRE LE FLAG ADD DANS LES TABLES POUR SYNCHRO */
+                await this.crudDbService.addListItem({ ...datas, recordType: ISynchroRecordType.ADD })
             }
-
-            console.log("post fail api")
         }
     }
 

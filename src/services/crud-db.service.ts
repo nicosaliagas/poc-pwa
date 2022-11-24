@@ -35,7 +35,7 @@ export class CrudDbService {
         }).toArray()))
     }
 
-    public addList(listName: string): Observable<any> {
+    public addListAncien(listName: string): Observable<any> {
         return from(db.todoLists.add({
             id: listName,
             title: listName,
@@ -43,13 +43,21 @@ export class CrudDbService {
         }))
     }
 
-    public addListItem(listId: any, itemName: string): Observable<any> {
+    public addListItemAncien(listId: any, itemName: string): Observable<any> {
         return from(db.todoItems.add({
             id: this.helperService.generateGuid(),
             title: itemName,
             todoListId: listId,
             recordType: ISynchroRecordType.ADD,
         }))
+    }
+
+    async addList(item: TodoList): Promise<any> {
+        return db.todoLists.add(item)
+    }
+
+    async addListItem(item: TodoItem): Promise<any> {
+        return db.todoItems.add(item)
     }
 
     async resetDatabase(): Promise<any> {

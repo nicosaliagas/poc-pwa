@@ -67,10 +67,22 @@ export class AppDB extends Dexie {
 
     async resetDatabase() {
         await db.transaction('rw', 'todoItems', 'todoLists', () => {
-            this.todoItems.clear();
             this.todoLists.clear();
+            this.todoItems.clear();
             this.cacheable.clear();
             // this.populate();
+        });
+    }
+    
+    async resetTableList() {
+        await db.transaction('rw', 'todoLists', () => {
+            this.todoLists.clear();
+        });
+    }
+
+    async resetTableItems() {
+        await db.transaction('rw', 'todoItems', () => {
+            this.todoItems.clear();
         });
     }
 }

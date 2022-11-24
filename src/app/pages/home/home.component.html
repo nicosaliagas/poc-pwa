@@ -1,7 +1,6 @@
-
-<div class="btnSynchro">
+<!-- <div class="btnSynchro">
     <button type="submit" (click)="sychronize()">🔁 Synchroniser</button>
-</div>
+</div> -->
 
 <div class="newListContainer" style="margin-top: 30px;">
     <h3>New List : </h3>
@@ -24,4 +23,11 @@
     <button (click)="resetServerDatabase()">Reset Server Database</button>
     <h3>Reset local Database</h3>
     <button (click)="resetLocalDatabase()">Reset Local Database</button>
+</div>
+
+<!-- notification -->
+<div class="notif-container" *ngIf="synchoRunning">
+    <div class="alert">
+        <strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.
+    </div>
 </div>

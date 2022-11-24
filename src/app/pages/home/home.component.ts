@@ -2,7 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@
 import { StringService } from 'cocori-ng/src/feature-core';
 import { firstValueFrom } from 'rxjs';
 import { CrudApiService } from 'src/services/crud-api.service';
-import { TodoList } from 'src/services/db';
+import { db, TodoList } from 'src/services/db';
 
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
@@ -20,6 +20,7 @@ export class HomeComponent implements OnInit {
   listName = 'My new list';
   // todoLists: TodoList[] = [];
   connectionStatus!: IConnectionStatusValue;
+  synchoRunning: boolean = false
 
   constructor(
     private connectionStatusService: ConnectionStatusService,
@@ -34,7 +35,7 @@ export class HomeComponent implements OnInit {
     this.connectionStatusService.onConnectionStatutUpdated.subscribe((data: IConnectionStatusValue) => {
       this.connectionStatus = data
 
-      this.getListsDatas()
+      this.changeConnectionStatus()
     })
 
     this.crudApiService.onRefreshList.subscribe(() => {
@@ -42,6 +43,35 @@ export class HomeComponent implements OnInit {
 
       this.getListsDatas()
     })
+  }
+
+  private async changeConnectionStatus() {
+    if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
+
+      const anythingToSync: boolean = await this.synchroService.checkForSync()
+
+      if (anythingToSync) {
+        this.synchoRunning = true
+
+        this.cdr.detectChanges()
+
+        await this.sychronize()
+      }
+
+      await this.getListsDatas()
+
+      await this.sleep(2000)
+
+      this.synchoRunning = false
+
+      this.cdr.detectChanges()
+    } else {
+      this.getListsDatas()
+    }
+  }
+
+  private sleep(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   private async getListsDatas() {
@@ -73,7 +103,7 @@ export class HomeComponent implements OnInit {
       .replaceAllAccentByNonAccentCharacters()
       .toString()
 
-    await this.crudApiService.NewListRessouceX(this.listName)
+    await this.crudApiService.postList(this.listName)
 
     this.getListsDatas()
 
@@ -109,19 +139,18 @@ export class HomeComponent implements OnInit {
   }
 
   async sychronize() {
-    if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
+    await this.synchroService.syncListsWithServer()
 
-      await this.synchroService.indexedDBToServer()
+    await db.resetTableList()
 
-      await this.crudDbService.resetDatabase()
+    await this.synchroService.syncItemsWithServer()
 
-      await firstValueFrom(this.crudApiService.GetListsItemsAPI())
+    await db.resetTableItems()
 
-      await this.synchroService.serverToIndexedDB(this.crudApiService.todoLists)
+    // await firstValueFrom(this.crudApiService.GetListsItemsAPI())
 
-      this.getListsDatas()
-    } else {
-      window.alert("Vous devez être connecté au réseau pour synchroniser les données de l'application.")
-    }
+    // await this.synchroService.serverToIndexedDB(this.crudApiService.todoLists)
+
+    // this.getListsDatas()
   }
 }

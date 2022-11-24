@@ -35,7 +35,7 @@ export class ItemListComponent {
   /** création de l'item de la liste */
   async addItem() {
 
-    await this.crudApiService.NewListRessouceX(this.todoList.title, this.itemName, this.todoList.id)
+    await this.crudApiService.postItem(this.todoList.id, this.itemName)
 
     console.log("Retour au subscribe dans ItemList + refresh the list")
 

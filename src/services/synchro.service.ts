@@ -35,28 +35,40 @@ export class SynchroService {
         }))
     }
 
-    async indexedDBToServer() {
-        const newId: string = this.helperService.generateGuid()
+    async checkForSync(): Promise<boolean> {
+        const numberListToSync: number = await db.todoLists.toCollection().count()
+        const numberItemsListToSync: number = await db.todoItems.toCollection().count()
 
+        return numberListToSync > 0 || numberItemsListToSync > 0
+    }
+
+    async syncListsWithServer() {
         const listsToAdd: TodoList[] = await db.todoLists.where({
             recordType: ISynchroRecordType.ADD,
         }).toArray()
 
         await Promise.all(listsToAdd.map(async (list: TodoList) => {
-            const listeName: string = list.title
+            await this.crudApiService.postList(list.title)
 
-            // await firstValueFrom(this.crudApiService.NewListRessouceX(listeName))
-            await this.crudApiService.NewListRessouceX(listeName)
+            // const listItemsToAdd: TodoList[] = await db.todoItems.where({
+            //     todoListId: list.id,
+            //     recordType: ISynchroRecordType.ADD,
+            // }).toArray()
 
-            const listItemsToAdd: TodoList[] = await db.todoItems.where({
-                todoListId: list.id,            
-                recordType: ISynchroRecordType.ADD,
-            }).toArray()
+            // await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
+            //     // await firstValueFrom(this.crudApiService.NewListRessouceX(listeName, item.title))
+            //     await this.crudApiService.postItem(listeName, item.title)
+            // }));
+        }));
+    }
 
-            await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
-                // await firstValueFrom(this.crudApiService.NewListRessouceX(listeName, item.title))
-                await this.crudApiService.NewListRessouceX(listeName, item.title)
-            }));
+    async syncItemsWithServer() {
+        const listItemsToAdd: TodoList[] = await db.todoItems.where({
+            recordType: ISynchroRecordType.ADD,
+        }).toArray()
+
+        await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
+            await this.crudApiService.postItem(item.todoListId, item.title)
         }));
     }
 }
