@@ -42,7 +42,7 @@ export class AppDB extends Dexie {
             cacheable: 'key',
         });
         // this.on('populate', () => this.populate());
-        this.on('populate', () => null );
+        this.on('populate', () => null);
     }
 
     // async populate() {
@@ -66,14 +66,14 @@ export class AppDB extends Dexie {
     // }
 
     async resetDatabase() {
-        await db.transaction('rw', 'todoItems', 'todoLists', () => {
+        await db.transaction('rw', 'todoItems', 'todoLists', 'cacheable', () => {
             this.todoLists.clear();
             this.todoItems.clear();
             this.cacheable.clear();
             // this.populate();
         });
     }
-    
+
     async resetTableList() {
         await db.transaction('rw', 'todoLists', () => {
             this.todoLists.clear();

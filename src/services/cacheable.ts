@@ -7,9 +7,32 @@ import { Cacheable, db } from './db';
     providedIn: 'root'
 })
 export class CacheableService {
-    async cacheable<T>(fn: () => Observable<T>, key: string, defaultValue: T) {
+
+    async cacheDatas(key: string, values: any) {
+
+        console.log("cacheable key >>> ", key)
+        console.log("cacheable values >>> ", values)
+
+        const cached: Cacheable[] = await db.cacheable.where({
+            key: key,
+        }).toArray()
+
+        if (!cached.length) {
+            await db.cacheable.add({
+                key: key,
+                value: JSON.stringify({ todoLists: values }),
+            })
+        } else {
+            await db.cacheable.update(key, {
+                key: key,
+                value: JSON.stringify({ todoLists: values }),
+            })
+        }
+    }
+
+    async getApiCacheable<T>(fn: () => Observable<T>, key: string, defaultValue: T) {
         let result;
-        
+
         const cached: Cacheable[] = await db.cacheable.where({
             key: key,
         }).toArray()
@@ -30,12 +53,12 @@ export class CacheableService {
                 })
             }
 
-            console.log("from api")
+            console.log("retrieve data from api")
         } catch {
             // use the cached data if available, otherwise the default value.
             result = cached.length === 1 ? JSON.parse(cached[0].value) : defaultValue;
 
-            console.log("from local")
+            console.log("retrieve data from local")
         }
 
         return result;

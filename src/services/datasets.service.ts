@@ -1,5 +1,6 @@
+import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
-import { HttpService, SkipHeaders } from 'cocori-ng/src/feature-core';
+import { HttpService } from 'cocori-ng/src/feature-core';
 import { catchError, forkJoin, Observable, Subject, throwError } from 'rxjs';
 
 import { EnvironmentService } from './environment.service';
@@ -13,6 +14,7 @@ export class DatasetsService {
 
     constructor(
         @Inject(HttpService) private httpService: HttpService,
+        private httpClient: HttpClient,
         private environmentService: EnvironmentService,
     ) { }
 
@@ -45,7 +47,7 @@ export class DatasetsService {
 
         listCountryDatas.forEach((data) => {
             listCountryApis.push(
-                <any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, { "name": data.name }, SkipHeaders.TRUE)
+                this.httpClient.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, { "name": data.name })
             )
         })
 
@@ -53,18 +55,17 @@ export class DatasetsService {
     }
 
     GetListCountries(): Observable<any> {
-        return <any>this.httpService.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, {}, SkipHeaders.TRUE);
+        return this.httpClient.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, {});
     }
 
     GetListCountriesTwo(): Observable<any> {
-        return <any>this.httpService.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountriesTwo}`, {}, SkipHeaders.TRUE);
+        return this.httpClient.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountriesTwo}`, {});
     }
 
     PostCountry(name: string): Observable<any> {
-        // return <any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, { "name": name }, SkipHeaders.TRUE);
         var subject = new Subject<any>();
 
-        (<any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, { "name": name }, SkipHeaders.TRUE)).pipe(
+        (this.httpClient.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}`, { "name": name })).pipe(
             catchError(err => {
                 console.log("🤮🤮🤮 datas >>", { "name": name })
 
@@ -76,7 +77,6 @@ export class DatasetsService {
     }
 
     PostCountryTwo(name: string): Observable<any> {
-        return <any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountriesTwo}`, { "name": name }, SkipHeaders.TRUE);
-        // return <any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountries}?ngsw-bypass`, { "name": name }, SkipHeaders.TRUE);
+        return this.httpClient.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${this.listCountriesTwo}`, { "name": name });
     }
 }

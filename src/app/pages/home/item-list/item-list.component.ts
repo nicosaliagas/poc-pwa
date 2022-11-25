@@ -1,5 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
-import { TodoItem, TodoList } from 'src/services/db';
+import { TodoList } from 'src/services/db';
 
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
@@ -37,64 +37,13 @@ export class ItemListComponent {
 
     await this.crudApiService.postItem(this.todoList.id, this.itemName)
 
+    // this.crudApiService.postItemX(this.todoList.id, this.itemName).subscribe(() => {
+    //   console.log("NTM !")
+    // })
+
     console.log("Retour au subscribe dans ItemList + refresh the list")
 
     this.crudApiService.onRefreshList.next()
-
-    /** ancien */
-
-    // this.crudApiService.NewListRessouce(this.todoList.title, this.itemName, this.todoList.id).pipe(
-    // ).subscribe(() => {
-    //   console.log("Retour au subscribe dans ItemList + refresh the list")
-
-    //   // this.crudApiService.onRefreshList.next()
-
-    //   // mettre NewListRessouce en async + mettre try/catch classique autour de l'appel
-
-    //   // this.getListsDatas()
-    // })
-
-
-
-
-
-
-
-    // } else {
-    //   this.crudDbService.addListItem(this.todoList.id, this.itemName).subscribe(() => {
-    //     this.readDatas()
-    //   })
-    // }
-  }
-
-  private async getListsDatas() {
-    const datas = await this.cacheableService.cacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', { "todoLists": [] })
-
-    console.log("items from api/local >> ", this.todoList.title, datas)
-
-    console.log("TODO : METTRE A JOUR LES ITEMS DE LA LISTE")
-
-    // this.todoList.todoItems = datas
-
-    this.cdr.detectChanges()
-
-    // if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-    //   this.getTodoItemsFromListNameAPI()
-    // } else {
-    //   this.getItemsFromListDb()
-    // }
-  }
-
-  // private getListItemsAPI(): Observable<any> {
-  //   return this.crudApiService.GetListDatas(this.todoList.title)
-  // }
-
-  private getItemsFromListDb() {
-    this.crudDbService.getItemsFromOneList(this.todoList.id).subscribe((todoItems: TodoItem[]) => {
-      this.todoList.todoItems = todoItems
-
-      this.cdr.detectChanges()
-    })
   }
 
   trackBy(index: number) {

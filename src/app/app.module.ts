@@ -1,4 +1,4 @@
-import { HttpClientModule } from '@angular/common/http';
+import { HTTP_INTERCEPTORS, HttpClientModule } from '@angular/common/http';
 import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { ServiceWorkerModule } from '@angular/service-worker';
@@ -12,6 +12,7 @@ import { environment } from '../environments/environment';
 import { DatasetsService } from '../services/datasets.service';
 import { EnvironmentLoaderService } from '../services/environment-loader.service';
 import { EnvironmentService } from '../services/environment.service';
+import { ErrorInterceptorService } from '../services/error-interceptor.service';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
@@ -23,7 +24,6 @@ import { AppComponent } from './app.component';
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,
-    /** #TODO conditionner avec les variables d'environnement */
     ServiceWorkerModule.register('ngsw-worker.js', {
       enabled: environment.production,
       // Register the ServiceWorker as soon as the application is stable
@@ -32,6 +32,11 @@ import { AppComponent } from './app.component';
     })
   ],
   providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptorService,
+      multi: true
+    },
     {
       provide: APP_INITIALIZER,
       useFactory: LoadEnvironmentFactory,

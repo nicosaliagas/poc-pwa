@@ -1,8 +1,5 @@
 <h3>List : {{ todoList.title }}</h3>
 
-<!--
-    Adding item form
--->
 <label>
     Todo :
     <input autocomplete="off" type="text" id="name" #name [(ngModel)]="itemName" />
@@ -14,9 +11,3 @@
         <li *ngIf="item.title"> {{ item.title }} </li>
     </ng-container>
 </ul>
-
-<!-- <ul>
-    <li *ngFor="let item of todoItems$ | async">
-        {{ item.title }}
-    </li>
-</ul> -->

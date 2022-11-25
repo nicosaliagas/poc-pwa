@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { StringService } from 'cocori-ng/src/feature-core';
-import { firstValueFrom } from 'rxjs';
 import { CrudApiService } from 'src/services/crud-api.service';
 import { db, TodoList } from 'src/services/db';
 
@@ -75,7 +74,7 @@ export class HomeComponent implements OnInit {
   }
 
   private async getListsDatas() {
-    const datas = await this.cacheableService.cacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', { "todoLists": [] })
+    const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', { "todoLists": [] })
 
     console.log("🔥todoLists from api/local >> ", datas)
 
@@ -83,18 +82,6 @@ export class HomeComponent implements OnInit {
 
     this.cdr.detectChanges()
   }
-
-  // private getAllTodosListItemsIndexedDb() {
-  //   this.todoLists = []
-
-  //   this.crudDbService.getRecords().subscribe((datas: TodoList[]) => {
-  //     this.todoLists = datas
-
-  //     this.cdr.detectChanges()
-  //   })
-
-  //   this.cdr.detectChanges()
-  // }
 
   async addNewList() {
     this.listName = new StringService(this.listName)
@@ -106,32 +93,12 @@ export class HomeComponent implements OnInit {
     await this.crudApiService.postList(this.listName)
 
     this.getListsDatas()
-
-    // if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-    // this.crudApiService.NewListRessouceX(this.listName).subscribe(
-    //   () => {
-    //     this.getListsDatas()
-    //   }
-    // )
-    // } else {
-    //   this.crudDbService.addList(this.listName).subscribe(() => this.readDatas())
-    // }
   }
 
   async resetLocalDatabase() {
     await this.crudDbService.resetDatabase()
 
-    if (this.connectionStatus === IConnectionStatusValue.OFFLINE) {
-      this.getListsDatas()
-    }
-  }
-
-  async resetServerDatabase() {
-    await Promise.all(this.crudApiService.todoLists.map(async (list: TodoList) => {
-      const listeName: string = list.title
-
-      await firstValueFrom(this.crudApiService.DeleteListRessource(listeName))
-    }));
+    this.getListsDatas()
   }
 
   identifyList(index: number, list: TodoList) {
@@ -146,11 +113,5 @@ export class HomeComponent implements OnInit {
     await this.synchroService.syncItemsWithServer()
 
     await db.resetTableItems()
-
-    // await firstValueFrom(this.crudApiService.GetListsItemsAPI())
-
-    // await this.synchroService.serverToIndexedDB(this.crudApiService.todoLists)
-
-    // this.getListsDatas()
   }
 }
