@@ -1,9 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
+import { FormBuilder, FormGroup } from '@angular/forms';
+import { Observable } from 'rxjs';
 import { TodoList } from 'src/services/db';
 
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
-import { CrudApiService } from '../../../../services/crud-api.service';
+import { CrudApiService, NewTodo } from '../../../../services/crud-api.service';
 import { CrudDbService } from '../../../../services/crud-db.service';
 
 @Component({
@@ -15,11 +17,14 @@ import { CrudDbService } from '../../../../services/crud-db.service';
 export class ItemListComponent {
   @Input() todoList!: TodoList;
 
-  connectionStatus!: IConnectionStatusValue;
-  itemName = 'My new item';
+  public $defaultTodos: Observable<any> = this.crudApiService.GetDefaultTodosList()
+  public connectionStatus!: IConnectionStatusValue;
+  public itemName = 'My new item';
+  public formulaire!: FormGroup;
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private fb: FormBuilder,
     private crudDbService: CrudDbService,
     private cacheableService: CacheableService,
     private connectionStatusService: ConnectionStatusService,
@@ -30,16 +35,39 @@ export class ItemListComponent {
     this.connectionStatusService.onConnectionStatutUpdated.subscribe((data: IConnectionStatusValue) => {
       this.connectionStatus = data
     })
+
+    this.formulaire = this.generateForm();
+
+    this.formulaire.get('newtodo')?.valueChanges
+      .subscribe((values) => {
+        if (values) {
+          this.formulaire.get('todo')?.setValue(null, { emitEvent: false })
+          this.cdr.detectChanges()
+        }
+      })
+
+    this.formulaire.get('todo')?.valueChanges
+      .subscribe((values) => {
+        if (values) {
+          this.formulaire.get('newtodo')?.setValue('', { emitEvent: false })
+          this.cdr.detectChanges()
+        }
+      })
+  }
+
+  private generateForm(): FormGroup {
+    return this.fb.group({
+      todo: [null],
+      newtodo: [null]
+    });
   }
 
   /** création de l'item de la liste */
-  async addItem() {
+  async addItem({ value, valid }: { value: NewTodo, valid: boolean }) {
 
-    await this.crudApiService.postItem(this.todoList.id, this.itemName)
+    console.log("value >> ", value)
 
-    // this.crudApiService.postItemX(this.todoList.id, this.itemName).subscribe(() => {
-    //   console.log("NTM !")
-    // })
+    await this.crudApiService.postItem(this.todoList.id, value.newtodo)
 
     console.log("Retour au subscribe dans ItemList + refresh the list")
 

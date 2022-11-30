@@ -52,6 +52,12 @@ http-server: a simple static HTTP server
 https://www.npmjs.com/package/http-server
 
 
+## Install package json-server : base donnée à partir d'un fichier json
+
+npm install -g json-server
+
+json-server --watch C:\Users\nicos\Dev\poc\poc-pwa\src\assets\ressources\db.json
+
 ## Launch server
 
 Run before : `ng build`

@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HelperService } from 'cocori-ng/src/feature-core';
 
 import { CrudApiService } from './crud-api.service';
-import { db, ISynchroRecordType, TodoItem, TodoList } from './db';
+import { db, ISynchroRecordType, TodoList } from './db';
 
 @Injectable()
 export class SynchroService {
@@ -11,29 +11,29 @@ export class SynchroService {
         private crudApiService: CrudApiService,
         private helperService: HelperService) { }
 
-    async serverToIndexedDB(listsToAdd: TodoList[]): Promise<any> {
-        await Promise.all(listsToAdd.map(async (list: TodoList) => {
+    // async serverToIndexedDB(listsToAdd: TodoList[]): Promise<any> {
+    //     await Promise.all(listsToAdd.map(async (list: TodoList) => {
 
-            const idListAdded: number = await db.todoLists.add({
-                id: this.helperService.generateGuid(),
-                title: list.title,
-            })
+    //         const idListAdded: number = await db.todoLists.add({
+    //             id: this.helperService.generateGuid(),
+    //             name: list.name,
+    //         })
 
-            if (list.todoItems?.length) {
-                await Promise.all(list.todoItems.map(async (item: TodoItem) => {
-                    if (item.title) {
-                        await db.todoItems.add({
-                            title: item.title,
-                            id: this.helperService.generateGuid(),
-                            todoListId: idListAdded,
-                        })
-                    } else {
-                        await 1
-                    }
-                }))
-            }
-        }))
-    }
+    //         if (list.items?.length) {
+    //             await Promise.all(list.items.map(async (item: TodoItem) => {
+    //                 if (item.name) {
+    //                     await db.todoItems.add({
+    //                         name: item.name,
+    //                         id: this.helperService.generateGuid(),
+    //                         todoListId: idListAdded,
+    //                     })
+    //                 } else {
+    //                     await 1
+    //                 }
+    //             }))
+    //         }
+    //     }))
+    // }
 
     async checkForSync(): Promise<boolean> {
         const numberListToSync: number = await db.todoLists.toCollection().count()
@@ -48,7 +48,7 @@ export class SynchroService {
         }).toArray()
 
         await Promise.all(listsToAdd.map(async (list: TodoList) => {
-            await this.crudApiService.postList(list.title)
+            await this.crudApiService.postList(list.name)
 
             // const listItemsToAdd: TodoList[] = await db.todoItems.where({
             //     todoListId: list.id,
@@ -67,8 +67,8 @@ export class SynchroService {
             recordType: ISynchroRecordType.ADD,
         }).toArray()
 
-        await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
-            await this.crudApiService.postItem(item.todoListId, item.title)
-        }));
+        // await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
+        //     await this.crudApiService.postItem(item.todoListId, item.name)
+        // }));
     }
 }

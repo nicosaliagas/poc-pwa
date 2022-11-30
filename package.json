@@ -6,6 +6,7 @@
     "start": "ng serve",
     "build": "ng build",
     "server": "http-server -p 8080 -c-1 dist/poc-pwa --cors --ssl -C .ssl/localhost.crt -K .ssl/localhost.key",
+    "json-server": "json-server --watch C:\\Users\\nicos\\Dev\\poc\\poc-pwa\\src\\assets\\ressources\\db.json",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },

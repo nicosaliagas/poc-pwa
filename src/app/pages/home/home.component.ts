@@ -6,6 +6,7 @@ import { db, TodoList } from 'src/services/db';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
+import { RequestQueueService } from '../../../services/request-queue.service';
 import { SynchroService } from '../../../services/synchro.service';
 
 @Component({
@@ -23,6 +24,7 @@ export class HomeComponent implements OnInit {
 
   constructor(
     private connectionStatusService: ConnectionStatusService,
+    public requestQueueService: RequestQueueService,
     public crudApiService: CrudApiService,
     private cacheableService: CacheableService,
     private synchroService: SynchroService,
@@ -44,11 +46,25 @@ export class HomeComponent implements OnInit {
     })
   }
 
+  public callBadRequest() {
+    console.log("🤡 callBadRequest ")
+    this.crudApiService.BadFakeRequest().subscribe()
+  }
+
   private async changeConnectionStatus() {
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
 
-      const anythingToSync: boolean = await this.synchroService.checkForSync()
+      /** Méthode via appels http stacked */
+      // if (this.requestQueueService.requestsToSync.length) {
+      //   this.synchoRunning = true
 
+      //   await this.requestQueueService.executeQueuedRequests()
+
+      //   console.log("on est bon là ?! 👌")
+      // }
+
+      /** Méthode via élément taggué dans IndexedDb */
+      const anythingToSync: boolean = await this.synchroService.checkForSync()
       if (anythingToSync) {
         this.synchoRunning = true
 
@@ -74,11 +90,11 @@ export class HomeComponent implements OnInit {
   }
 
   private async getListsDatas() {
-    const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', { "todoLists": [] })
+    const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
 
     console.log("🔥todoLists from api/local >> ", datas)
 
-    this.crudApiService.todoLists = datas.todoLists
+    this.crudApiService.todoLists = datas
 
     this.cdr.detectChanges()
   }
@@ -102,7 +118,7 @@ export class HomeComponent implements OnInit {
   }
 
   identifyList(index: number, list: TodoList) {
-    return `${list.id}${list.title}`;
+    return `${list.id}${list.name}`;
   }
 
   async sychronize() {

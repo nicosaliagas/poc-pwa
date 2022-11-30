@@ -1,0 +1,23 @@
+.newTodoContainer {
+    display: flex;
+    flex-direction: row;
+    
+    .label {
+        margin-right: 15px;
+    }
+
+    .btnSubmit {
+        margin-left: 15px;
+    }
+
+    .newTodoInputs {
+        display: flex;
+        flex-direction: column;
+        margin: 0 5px;
+        max-width: 160px;
+
+        .input {
+            margin-bottom: 6px;
+        }
+    }
+}

@@ -5,22 +5,17 @@ export enum ISynchroRecordType {
     DELETE = 'delete',
 }
 
-export interface Item {
-    id?: number;
-    name: string;
-}
-
 export interface TodoList {
     id: string;
-    title: string;
-    todoItems?: TodoItem[];
+    name: string;
+    items?: TodoItem[];
     recordType?: string;
 }
 
 export interface TodoItem {
-    title: string;
     id: string;
-    todoListId?: any;
+    name: string;
+    todoListId: string;
     recordType?: string;
 }
 
