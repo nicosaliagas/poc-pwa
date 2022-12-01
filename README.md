@@ -56,7 +56,9 @@ https://www.npmjs.com/package/http-server
 
 npm install -g json-server
 
-json-server --watch C:\Users\nicos\Dev\poc\poc-pwa\src\assets\ressources\db.json
+Lancer le serveur  `json-server --watch C:\Users\nicos\Dev\poc\poc-pwa\src\assets\ressources\db.json` ou `npm run json-server`
+
+Puis aller sur `http://localhost:3000` pour voir la base
 
 ## Launch server
 

@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { StringService } from 'cocori-ng/src/feature-core';
+import { HelperService, StringService } from 'cocori-ng/src/feature-core';
 import { CrudApiService } from 'src/services/crud-api.service';
-import { db, TodoList } from 'src/services/db';
+import { db } from 'src/services/db';
 
+import { ListsItems } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
@@ -28,6 +29,7 @@ export class HomeComponent implements OnInit {
     public crudApiService: CrudApiService,
     private cacheableService: CacheableService,
     private synchroService: SynchroService,
+    private helperService: HelperService,
     private crudDbService: CrudDbService,
     private cdr: ChangeDetectorRef,) { }
 
@@ -69,8 +71,13 @@ export class HomeComponent implements OnInit {
         this.synchoRunning = true
 
         this.cdr.detectChanges()
+        
+        await this.getListsDatas()
 
-        await this.sychronize()
+        await this.pushIndexedDbToServer()
+
+        throw new Error("tamere");
+        
       }
 
       await this.getListsDatas()
@@ -94,7 +101,7 @@ export class HomeComponent implements OnInit {
 
     console.log("🔥todoLists from api/local >> ", datas)
 
-    this.crudApiService.todoLists = datas
+    this.crudApiService.lists = datas
 
     this.cdr.detectChanges()
   }
@@ -106,7 +113,7 @@ export class HomeComponent implements OnInit {
       .replaceAllAccentByNonAccentCharacters()
       .toString()
 
-    await this.crudApiService.postList(this.listName)
+    await this.crudApiService.postList(this.helperService.generateGuid(), this.listName)
 
     this.getListsDatas()
   }
@@ -117,17 +124,16 @@ export class HomeComponent implements OnInit {
     this.getListsDatas()
   }
 
-  identifyList(index: number, list: TodoList) {
+  identifyList(index: number, list: ListsItems) {
     return `${list.id}${list.name}`;
   }
 
-  async sychronize() {
+  async pushIndexedDbToServer() {
     await this.synchroService.syncListsWithServer()
 
-    await db.resetTableList()
-
     await this.synchroService.syncItemsWithServer()
-
+    
+    await db.resetTableList()
     await db.resetTableItems()
   }
 }

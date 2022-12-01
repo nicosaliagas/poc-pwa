@@ -17,8 +17,8 @@
 
 <!-- from api crud -->
 <div class="newListContainer">
-    <div *ngFor="let todoList of crudApiService.todoLists; trackBy: identifyList">
-        <item-list [todoList]="todoList"></item-list>
+    <div *ngFor="let list of crudApiService.lists; trackBy: identifyList">
+        <item-list [list]="list"></item-list>
     </div>
 </div>
 

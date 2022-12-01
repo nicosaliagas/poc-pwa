@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 
-import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
+import { ConnectionStatusService } from './connection-status.service';
 import { Cacheable, db } from './db';
 
 @Injectable({
@@ -26,22 +26,18 @@ export class CacheableService {
         if (!cached.length) {
             await db.cacheable.add({
                 key: key,
-                value: JSON.stringify({ todoLists: values }),
+                value: JSON.stringify(values),
             })
         } else {
             await db.cacheable.update(key, {
                 key: key,
-                value: JSON.stringify({ todoLists: values }),
+                value: JSON.stringify(values),
             })
         }
     }
 
     async getApiCacheable<T>(fn: () => Observable<T>, key: string, defaultValue: T) {
         let result;
-
-        if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
-            fn = () => <Observable<any>>this.httpClient.get(`http://www.cocorisoft.com`, {})
-        }
 
         const cached: Cacheable[] = await db.cacheable.where({
             key: key,

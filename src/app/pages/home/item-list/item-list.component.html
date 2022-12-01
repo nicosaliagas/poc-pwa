@@ -1,4 +1,4 @@
-<h3>List : {{ todoList.name }}</h3>
+<h3>List : {{ list.name }}</h3>
 
 <form class="form-horizontal" [formGroup]="formulaire" (ngSubmit)="addItem(formulaire)" autocomplete="on">
     <div class="newTodoContainer">
@@ -18,7 +18,7 @@
 </form>
 
 <ul>
-    <ng-container *ngFor="let item of todoList.items; trackBy: trackBy">
+    <ng-container *ngFor="let item of list.items; trackBy: trackBy">
         <li *ngIf="item.name"> {{ item.name }} </li>
     </ng-container>
 </ul>

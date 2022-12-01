@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { HelperService, HttpService } from 'cocori-ng/src/feature-core';
 import { firstValueFrom, map, Observable, of, Subject } from 'rxjs';
 
+import { Element, ListsItems } from '../models/todos.model';
 import { CacheableService } from './cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { CrudDbService } from './crud-db.service';
@@ -19,7 +20,7 @@ export interface NewTodo {
 })
 export class CrudApiService {
     public onRefreshList: Subject<void> = new Subject<void>();
-    public todoLists: TodoList[] = [];
+    public lists: ListsItems[] = [];
 
     constructor(
         @Inject(HttpService) private httpService: HttpService,
@@ -40,9 +41,9 @@ export class CrudApiService {
     }
 
     public GetListsItemsAPI(): Observable<any> {
-        this.todoLists.splice(0, this.todoLists.length)
+        this.lists.splice(0, this.lists.length)
 
-        return this.httpClient.get(`http://localhost:3000/list`, {})
+        return this.httpClient.get(`${this.environmentService.jsonServer}/list`, {})
         // return this.httpClient.get(`/assets/ressources/lists.json`, {})
 
         // return this.GetLists().pipe(
@@ -65,42 +66,43 @@ export class CrudApiService {
         )
     }
 
-    async postList(listId: string) {
+    async postList(listId: string, listName: string) {
+        const newList: ListsItems = <ListsItems>{ id: listId, name: listName, items: [] }
+
         try {
-            await firstValueFrom(this.httpClient.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listId}`, {}));
+            await firstValueFrom(this.httpClient.post(`${this.environmentService.jsonServer}/list`, newList));
         } catch {
             if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
                 const key = 'listsItems'
 
-                this.todoLists.push(<TodoList>{ id: listId, name: listId, items: [] })
+                this.lists.push(newList)
 
-                await this.cacheableService.cacheDatas(key, this.todoLists)
+                await this.cacheableService.cacheDatas(key, this.lists)
 
-                await this.crudDbService.addList({ id: listId, name: listId, recordType: ISynchroRecordType.ADD })
+                await this.crudDbService.addList(<TodoList>{ id: newList.id, name: newList.name, recordType: ISynchroRecordType.ADD })
             }
         }
     }
 
-    async postItem(listId: string, itemTitle: string) {
-        let datas!: TodoItem
+    async postItem(listId: string, itemId: string, itemTitle: string) {
+        let datas: Element = { id: itemId, name: itemTitle }
 
-        datas = { id: this.helperService.generateGuid(), name: itemTitle, todoListId: listId }
+        const list: ListsItems = <ListsItems>this.lists.find((list: Element) => list.id === listId)
+
+        list.items?.push(datas)
 
         try {
-            // await firstValueFrom(<any>this.httpService.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listId}`, datas, SkipHeaders.TRUE));
-            await firstValueFrom(<any>this.httpClient.post(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listId}`, datas));
+            await firstValueFrom(<any>this.httpClient.put(`${this.environmentService.jsonServer}/list/${listId}`, list));
         } catch {
             if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
-                const key = 'listsItems'
-                const list: TodoList = <TodoList>this.todoLists.find((list: TodoList) => list.id === listId)
-
-                list.items?.push(datas)
-
-                await this.cacheableService.cacheDatas(key, this.todoLists)
-
-                await this.crudDbService.addListItem({ ...datas, recordType: ISynchroRecordType.ADD })
+                await this.cacheableService.cacheDatas('listsItems', this.lists)
+                await this.crudDbService.addListItem(<TodoItem>{ ...datas, todoListId: listId, recordType: ISynchroRecordType.ADD })
             }
         }
+    }
+
+    async postListItems(list: ListsItems) {
+        await firstValueFrom(<any>this.httpClient.put(`${this.environmentService.jsonServer}/list/${list.id}`, list));
     }
 
     DeleteListRessource(listName: string): Observable<any> {

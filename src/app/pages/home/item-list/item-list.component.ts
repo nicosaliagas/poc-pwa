@@ -1,8 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
+import { HelperService } from 'cocori-ng/src/feature-core';
 import { Observable } from 'rxjs';
-import { TodoList } from 'src/services/db';
 
+import { ListsItems } from '../../../../models/todos.model';
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
 import { CrudApiService, NewTodo } from '../../../../services/crud-api.service';
@@ -15,7 +16,7 @@ import { CrudDbService } from '../../../../services/crud-db.service';
   styleUrls: ['./item-list.component.scss'],
 })
 export class ItemListComponent {
-  @Input() todoList!: TodoList;
+  @Input() list!: ListsItems;
 
   public $defaultTodos: Observable<any> = this.crudApiService.GetDefaultTodosList()
   public connectionStatus!: IConnectionStatusValue;
@@ -24,6 +25,7 @@ export class ItemListComponent {
 
   constructor(
     private cdr: ChangeDetectorRef,
+    private helperService: HelperService,
     private fb: FormBuilder,
     private crudDbService: CrudDbService,
     private cacheableService: CacheableService,
@@ -67,7 +69,7 @@ export class ItemListComponent {
 
     console.log("value >> ", value)
 
-    await this.crudApiService.postItem(this.todoList.id, value.newtodo)
+    await this.crudApiService.postItem(this.list.id, this.helperService.generateGuid(), value.newtodo)
 
     console.log("Retour au subscribe dans ItemList + refresh the list")
 
