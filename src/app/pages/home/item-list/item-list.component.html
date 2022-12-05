@@ -4,11 +4,11 @@
     <div class="newTodoContainer">
         <div class="label">Todo :</div>
         <div class="newTodoInputs">
-            <select class="input" formControlName="todo">
+            <select class="input" formControlName="newTodoId">
                 <option [ngValue]="null" disabled>Select a todo</option>
-                <option *ngFor="let todo of $defaultTodos | async" [ngValue]="todo.id">{{todo.name}}</option>
+                <option *ngFor="let todo of defaultTodos" [ngValue]="todo.id">{{todo.name}}</option>
             </select>
-            <input autocomplete="off" type="text" id="name" #name formControlName="newtodo"
+            <input autocomplete="off" type="text" id="name" #name formControlName="newTodoText"
                 placeholder="Write a todo..." />
         </div>
         <div class="btnSubmit">
@@ -19,6 +19,7 @@
 
 <ul>
     <ng-container *ngFor="let item of list.items; trackBy: trackBy">
-        <li *ngIf="item.name"> {{ item.name }} </li>
+        <li *ngIf="item.name"> {{item.name}} </li>
+        <li *ngIf="!item.name"> {{ item.id | labelTodo | async}} </li>
     </ng-container>
 </ul>

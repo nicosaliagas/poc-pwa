@@ -1,32 +1,10 @@
 import Dexie, { Table } from 'dexie';
 
-export enum ISynchroRecordType {
-    ADD = 'add',
-    DELETE = 'delete',
-}
-
-export interface TodoList {
-    id: string;
-    name: string;
-    items?: TodoItem[];
-    recordType?: string;
-}
-
-export interface TodoItem {
-    id: string;
-    name: string;
-    todoListId: string;
-    recordType?: string;
-}
-
-export interface Cacheable {
-    key: string
-    value: string;
-}
+import { Cacheable, DbItem, DbList } from '../models/todos.model';
 
 export class AppDB extends Dexie {
-    todoItems!: Table<TodoItem, number>;
-    todoLists!: Table<TodoList, number>;
+    todoItems!: Table<DbItem, number>;
+    todoLists!: Table<DbList, number>;
     cacheable!: Table<Cacheable, string>;
 
     constructor() {

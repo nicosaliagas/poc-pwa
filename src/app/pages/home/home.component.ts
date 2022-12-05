@@ -1,12 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HelperService, StringService } from 'cocori-ng/src/feature-core';
 import { CrudApiService } from 'src/services/crud-api.service';
-import { db } from 'src/services/db';
 
-import { ListsItems } from '../../../models/todos.model';
+import { ListItems } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
+import { db } from '../../../services/db';
 import { RequestQueueService } from '../../../services/request-queue.service';
 import { SynchroService } from '../../../services/synchro.service';
 
@@ -48,9 +48,14 @@ export class HomeComponent implements OnInit {
     })
   }
 
-  public callBadRequest() {
+  /** Soumettre un post qui sera fail lors de la synchro */
+  public async submitFailPost() {
+    // this.crudApiService.BadFakeRequest().subscribe()
+    
+    /** Liste existante mais item de liste todo inexistant en base */
+    await this.crudApiService.postItem("83D00680-FCCB-4233-B723-9D87089EAFA3", "idBadTodo", '')
+    
     console.log("🤡 callBadRequest ")
-    this.crudApiService.BadFakeRequest().subscribe()
   }
 
   private async changeConnectionStatus() {
@@ -74,10 +79,7 @@ export class HomeComponent implements OnInit {
         
         await this.getListsDatas()
 
-        await this.pushIndexedDbToServer()
-
-        throw new Error("tamere");
-        
+        await this.synchroIndexedDbToServer()
       }
 
       await this.getListsDatas()
@@ -124,16 +126,14 @@ export class HomeComponent implements OnInit {
     this.getListsDatas()
   }
 
-  identifyList(index: number, list: ListsItems) {
+  identifyList(index: number, list: ListItems) {
     return `${list.id}${list.name}`;
   }
 
-  async pushIndexedDbToServer() {
+  private async synchroIndexedDbToServer() {
     await this.synchroService.syncListsWithServer()
-
     await this.synchroService.syncItemsWithServer()
-    
     await db.resetTableList()
-    await db.resetTableItems()
+    // await db.resetTableItems()
   }
 }

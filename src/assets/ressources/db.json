@@ -1,4 +1,26 @@
 {
+  "selectTodos": [
+    {
+      "id": "c008eb2f-8286-4707-b42c-831b70bd8f70",
+      "name": "Bread - Triangle White"
+    },
+    {
+      "id": "8e171150-549e-415e-b027-1ce8c7cbaa4e",
+      "name": "Bread - Raisin Walnut Oval"
+    },
+    {
+      "id": "3e098f49-2623-4745-93a0-8a5e58c23532",
+      "name": "Wanton Wrap"
+    },
+    {
+      "id": "fe5b8d0c-21ae-4461-a098-613d3dfc70b6",
+      "name": "Chocolate - Liqueur Cups With Foil"
+    },
+    {
+      "id": "5575fa6e-5a5f-495c-8120-3ffc18442593",
+      "name": "Truffle Cups Green"
+    }
+  ],
   "list": [
     {
       "id": "83D00680-FCCB-4233-B723-9D87089EAFA3",
@@ -23,6 +45,10 @@
         {
           "id": "33fa10bb-8ef3-44b3-abbb-202a3e911f99",
           "name": "Appetizer - Lobster Phyllo Roll"
+        },
+        {
+          "id": "a2a5ea78-8f12-d5e8-b97d-885393f13359",
+          "name": "XXX1"
         }
       ]
     },
@@ -67,28 +93,42 @@
         {
           "id": "98b034ac-ca1c-4a77-87ea-d2a925c8d3c4",
           "name": "Mushroom - Chanterelle Frozen"
-        },
-        {
-          "id": "62111c0b-43af-8aae-850b-9f7044c8b519",
-          "name": "XXX1"
-        },
-        {
-          "id": "bc546795-09db-2082-ebab-a0764380bcae",
-          "name": "XXX2"
         }
       ]
     },
     {
-      "id": "ec8e7b19-6a24-c2ee-52b8-c3399ee36477",
-      "name": "",
+      "id": "45514ed6-ec1c-decf-9b71-e49ee7f75ecf",
+      "name": "Jeudi",
       "items": [
         {
-          "id": "d48efca1-c788-7792-31e3-501c9177276e",
-          "name": "JeudiTwo"
+          "id": "3e098f49-2623-4745-93a0-8a5e58c23532",
+          "name": ""
         },
         {
-          "id": "defea354-e37d-3dff-2f6e-ab5307a22b83",
-          "name": "JeudiOne"
+          "id": "1efba23f-b8d8-b786-981f-b09596bb6e89",
+          "name": "XXV"
+        },
+        {
+          "id": "3e098f49-2623-4745-93a0-8a5e58c23532",
+          "name": ""
+        },
+        {
+          "id": "a2a4ae48-4dcf-d37a-a563-ec0e03b896c7",
+          "name": "RRT"
+        },
+        {
+          "id": "fe5b8d0c-21ae-4461-a098-613d3dfc70b6",
+          "name": ""
+        }
+      ]
+    },
+    {
+      "id": "6cdd3f10-a81f-89e5-0b9f-86e16ff87061",
+      "name": "Dimanche",
+      "items": [
+        {
+          "id": "fe5b8d0c-21ae-4461-a098-613d3dfc70b6",
+          "name": ""
         }
       ]
     }

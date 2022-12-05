@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { StacktraceModel } from 'cocori-ng/src/feature-core';
 import { catchError, mergeMap, Observable, of, retryWhen, tap, throwError, timer } from 'rxjs';
 
+import { FakeHtppError } from '../models/todos.model';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { RequestQueueService } from './request-queue.service';
 
@@ -26,12 +27,15 @@ export class ErrorInterceptorService implements HttpInterceptor {
     this.next = next;
     this.request = request;
 
+    console.log("intercept  httprequest >>>", request)
+
+    const body: FakeHtppError = request.body
+
     return next.handle(request).pipe(
       this.retryAfterDelay(),
       catchError(
         this.handleError.bind(this)
-      )
-    );
+      ))
   }
 
   retryAfterDelay(): any {
@@ -54,7 +58,6 @@ export class ErrorInterceptorService implements HttpInterceptor {
   }
 
   private handleError(error: HttpErrorResponse | any) {
-
     const errorStacktrace: StacktraceModel = { httpError: error, dateError: new Date().toString() }
 
     console.log('errors', errorStacktrace)
@@ -67,6 +70,11 @@ export class ErrorInterceptorService implements HttpInterceptor {
         if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE && this.request.method !== 'GET') {
           this.requestQueueService.queueRequest(this.request)
         }
+
+        break;
+      
+      case 404:
+        console.log("😱 Erreur de synchro !!")
 
         break;
 

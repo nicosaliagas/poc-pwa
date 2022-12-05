@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input } from '@angular/core';
 import { FormBuilder, FormGroup } from '@angular/forms';
 import { HelperService } from 'cocori-ng/src/feature-core';
-import { Observable } from 'rxjs';
 
-import { ListsItems } from '../../../../models/todos.model';
+import { AddTodoFrm, Element, ListItems } from '../../../../models/todos.model';
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
-import { CrudApiService, NewTodo } from '../../../../services/crud-api.service';
+import { CrudApiService } from '../../../../services/crud-api.service';
 import { CrudDbService } from '../../../../services/crud-db.service';
 
 @Component({
@@ -16,9 +15,10 @@ import { CrudDbService } from '../../../../services/crud-db.service';
   styleUrls: ['./item-list.component.scss'],
 })
 export class ItemListComponent {
-  @Input() list!: ListsItems;
+  @Input() list!: ListItems;
 
-  public $defaultTodos: Observable<any> = this.crudApiService.GetDefaultTodosList()
+  // public $defaultTodos: Observable<any> = this.crudApiService.GetDefaultTodosList()
+  public defaultTodos: Element[] = []
   public connectionStatus!: IConnectionStatusValue;
   public itemName = 'My new item';
   public formulaire!: FormGroup;
@@ -38,20 +38,22 @@ export class ItemListComponent {
       this.connectionStatus = data
     })
 
+    this.getValues()
+
     this.formulaire = this.generateForm();
 
-    this.formulaire.get('newtodo')?.valueChanges
+    this.formulaire.get('newTodoText')?.valueChanges
       .subscribe((values) => {
         if (values) {
-          this.formulaire.get('todo')?.setValue(null, { emitEvent: false })
+          this.formulaire.get('newTodoId')?.setValue(null, { emitEvent: false })
           this.cdr.detectChanges()
         }
       })
 
-    this.formulaire.get('todo')?.valueChanges
+    this.formulaire.get('newTodoId')?.valueChanges
       .subscribe((values) => {
         if (values) {
-          this.formulaire.get('newtodo')?.setValue('', { emitEvent: false })
+          this.formulaire.get('newTodoText')?.setValue(null, { emitEvent: false })
           this.cdr.detectChanges()
         }
       })
@@ -59,19 +61,22 @@ export class ItemListComponent {
 
   private generateForm(): FormGroup {
     return this.fb.group({
-      todo: [null],
-      newtodo: [null]
+      newTodoId: [null],
+      newTodoText: [null]
     });
   }
 
+  private async getValues() {
+    this.defaultTodos = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+    this.cdr.detectChanges()
+  }
+
   /** création de l'item de la liste */
-  async addItem({ value, valid }: { value: NewTodo, valid: boolean }) {
+  async addItem({ value, valid }: { value: AddTodoFrm, valid: boolean }) {
+    const id: string = value.newTodoId ? value.newTodoId : this.helperService.generateGuid()
+    const text: string = value.newTodoId ? '' : value.newTodoText
 
-    console.log("value >> ", value)
-
-    await this.crudApiService.postItem(this.list.id, this.helperService.generateGuid(), value.newtodo)
-
-    console.log("Retour au subscribe dans ItemList + refresh the list")
+    await this.crudApiService.postItem(this.list.id, id, text)
 
     this.crudApiService.onRefreshList.next()
   }

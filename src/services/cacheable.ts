@@ -2,8 +2,9 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 
+import { Cacheable } from '../models/todos.model';
 import { ConnectionStatusService } from './connection-status.service';
-import { Cacheable, db } from './db';
+import { db } from './db';
 
 @Injectable({
     providedIn: 'root'
@@ -58,8 +59,6 @@ export class CacheableService {
                     value: JSON.stringify(result),
                 })
             }
-
-            console.log("retrieve data from api")
         } catch {
             // use the cached data if available, otherwise the default value.
             result = cached.length === 1 ? JSON.parse(cached[0].value) : defaultValue;
