@@ -52,16 +52,10 @@ export class SynchroService {
 
         await Promise.all(listsToAdd.map(async (list: DbList) => {
             await this.crudApiService.postList(list.id, list.name)
-
-            // const listItemsToAdd: TodoList[] = await db.todoItems.where({
-            //     todoListId: list.id,
-            //     recordType: ISynchroRecordType.ADD,
-            // }).toArray()
-
-            // await Promise.all(listItemsToAdd.map(async (item: TodoItem) => {
-            //     // await firstValueFrom(this.crudApiService.NewListRessouceX(listeName, item.title))
-            //     await this.crudApiService.postItem(listeName, item.title)
-            // }));
+                .then(async () => {
+                    await db.todoLists.where('id').equals(list.id).delete();
+                })
+                .catch(_ => { })
         }));
     }
 
@@ -81,7 +75,6 @@ export class SynchroService {
 
             return r;
         }, Object.create(null));
-
 
         const listsItemsToAdd: ListItems[] = []
 
@@ -115,14 +108,17 @@ export class SynchroService {
                             console.log(`💩 L'id ${item.id} n'existe pas !`)
 
                             await this.crudApiService.postItem(listItems.id, item.id, item.name, true)
+                                .then(_ => { console.log("succès") })
+                                .catch(_ => { console.log("failure") })
 
+                            console.log("Suite de la synchro .... 👌")
                             return;
                         }
                     }
 
-                    await this.crudApiService.postItem(listItems.id, item.id, item.name).then(async () => {
-                        await db.todoItems.where('id').equals(item.id).delete();
-                    })
+                    await this.crudApiService.postItem(listItems.id, item.id, item.name)
+                        .then(async () => await db.todoItems.where('id').equals(item.id).delete())
+                        .catch(_ => { })
                 }));
             }
         }));

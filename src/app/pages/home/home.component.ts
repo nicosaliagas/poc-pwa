@@ -6,7 +6,6 @@ import { ListItems } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
-import { db } from '../../../services/db';
 import { RequestQueueService } from '../../../services/request-queue.service';
 import { SynchroService } from '../../../services/synchro.service';
 
@@ -51,10 +50,10 @@ export class HomeComponent implements OnInit {
   /** Soumettre un post qui sera fail lors de la synchro */
   public async submitFailPost() {
     // this.crudApiService.BadFakeRequest().subscribe()
-    
+
     /** Liste existante mais item de liste todo inexistant en base */
     await this.crudApiService.postItem("83D00680-FCCB-4233-B723-9D87089EAFA3", "idBadTodo", '')
-    
+
     console.log("🤡 callBadRequest ")
   }
 
@@ -76,8 +75,10 @@ export class HomeComponent implements OnInit {
         this.synchoRunning = true
 
         this.cdr.detectChanges()
-        
-        await this.getListsDatas()
+
+        /** il faut charger les infos mises en cache */
+
+        this.crudApiService.lists = await this.cacheableService.getCacheDatas('listsItems', [])
 
         await this.synchroIndexedDbToServer()
       }
@@ -98,7 +99,7 @@ export class HomeComponent implements OnInit {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  private async getListsDatas() {
+  public async getListsDatas() {
     const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
 
     console.log("🔥todoLists from api/local >> ", datas)
@@ -116,6 +117,10 @@ export class HomeComponent implements OnInit {
       .toString()
 
     await this.crudApiService.postList(this.helperService.generateGuid(), this.listName)
+      .then(() => console.log("liste ajoutée !"))
+      .catch(() => console.log("🤬 Fuck"))
+
+    console.log("Suite du traitement .... 👌")
 
     this.getListsDatas()
   }
@@ -133,7 +138,5 @@ export class HomeComponent implements OnInit {
   private async synchroIndexedDbToServer() {
     await this.synchroService.syncListsWithServer()
     await this.synchroService.syncItemsWithServer()
-    await db.resetTableList()
-    // await db.resetTableItems()
   }
 }

@@ -38,19 +38,6 @@ export class CrudApiService {
         this.lists.splice(0, this.lists.length)
 
         return this.httpClient.get(`${this.environmentService.jsonServer}/list`, {})
-
-        // return this.GetLists().pipe(
-        //     mergeMap((lists: string[]) =>
-        //         // `from` emits each contact separately
-        //         from(lists).pipe(
-        //             // load each contact
-        //             mergeMap((list: string) => this.getListItems(list)),
-        //             // collect all contacts into an array
-        //             toArray(),
-        //             // add the newly fetched data to original result
-        //             map(todoLists => ({ ...this.todoLists, todoLists })),
-        //         ))
-        // )
     }
 
     private getListItems(listName: string) {
@@ -66,14 +53,14 @@ export class CrudApiService {
             await firstValueFrom(this.httpClient.post(`${this.environmentService.jsonServer}/list`, newList));
         } catch {
             if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
-                const key = 'listsItems'
-
                 this.lists.push(newList)
 
-                await this.cacheableService.cacheDatas(key, this.lists)
+                await this.cacheableService.cacheDatas('listsItems', this.lists)
 
                 await this.crudDbService.addList(<DbList>{ id: newList.id, name: newList.name, recordType: ISynchroRecordType.ADD })
             }
+
+            throw 'error';
         }
     }
 
@@ -82,7 +69,18 @@ export class CrudApiService {
 
         const list: ListItems = <ListItems>this.lists.find((list: Element) => list.id === listId)
 
-        list.items?.push(datas)
+        if (!list) {
+            throw 'error: liste introuvable pour ajouter l\'item';
+        }
+
+        /**on va vérifier que si l'id de l'item à ajouter est déjà présent ou pas 
+         * S'il est présent : c'est que l'item a été ajouté en offline
+        */
+        const findItem: number = list.items.findIndex((item: Element) => item.id === itemId)
+
+        if (findItem === -1) {
+            list.items.push(datas)
+        }
 
         try {
             await firstValueFrom(<any>this.httpClient.put(`${this.environmentService.jsonServer}/${flagErrorHttp ? 'listxxx' : 'list'}/${listId}`, list));

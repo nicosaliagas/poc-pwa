@@ -74,7 +74,11 @@ export class ErrorInterceptorService implements HttpInterceptor {
         break;
       
       case 404:
-        console.log("😱 Erreur de synchro !!")
+        console.log("😱😱😱 Erreur de synchro !!😱😱😱", this.request)
+
+        console.log("📍 Url", this.request.urlWithParams)
+        console.log("📍 Method", this.request.method)
+        console.log("📍 Body", this.request.body)
 
         break;
 

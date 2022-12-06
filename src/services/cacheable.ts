@@ -15,11 +15,15 @@ export class CacheableService {
         private httpClient: HttpClient,
         private connectionStatusService: ConnectionStatusService) { }
 
+    async getCacheDatas(key: string, defaultValue: any) {
+        const cached: Cacheable[] = await db.cacheable.where({
+            key: key,
+        }).toArray()
+
+        return cached.length === 1 ? JSON.parse(cached[0].value) : defaultValue;
+    }
+
     async cacheDatas(key: string, values: any) {
-
-        console.log("cacheable key >>> ", key)
-        console.log("cacheable values >>> ", values)
-
         const cached: Cacheable[] = await db.cacheable.where({
             key: key,
         }).toArray()

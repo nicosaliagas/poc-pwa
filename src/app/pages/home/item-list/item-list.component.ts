@@ -77,6 +77,8 @@ export class ItemListComponent {
     const text: string = value.newTodoId ? '' : value.newTodoText
 
     await this.crudApiService.postItem(this.list.id, id, text)
+      .then(() => console.log("item ajouté!"))
+      .catch(() => console.log("🤬 Fuck"))
 
     this.crudApiService.onRefreshList.next()
   }
