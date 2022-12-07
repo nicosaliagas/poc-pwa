@@ -15,6 +15,12 @@ const routes: Routes = [
       import('./pages/readonly/readonly.module').then((mod) => mod.ReadonlyModule),
     data: { title: `Page lecture seule` },
   },
+  {
+    path: 'synchro',
+    loadChildren: () =>
+      import('./pages/synchro/synchro.module').then((mod) => mod.SynchroModule),
+    data: { title: `Page synchro` },
+  },
 ];
 
 @NgModule({

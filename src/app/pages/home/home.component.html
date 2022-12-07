@@ -3,8 +3,8 @@
 </div> -->
 
 <div class="btnSynchro">
-    <button type="submit" (click)="getListsDatas()">Get lists</button>
-    <button type="submit" (click)="submitFailPost()">Soumettre un post en erreur</button>
+    <button type="submit" (click)="getListsDatas()">⬇️ Get all lists items</button>
+    <button type="submit" (click)="submitFailPost()">🚾 Soumettre un post en erreur</button>
 </div>
 
 <div class="newListContainer" style="margin-top: 30px;">
@@ -28,9 +28,27 @@
     <button (click)="resetLocalDatabase()">Reset Local Database</button>
 </div>
 
-<!-- notification -->
-<div class="notif-container" *ngIf="synchoRunning">
-    <div class="alert">
-        <strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.
+<!-- notification synchro en cours -->
+<div class="overlay-container" *ngIf="synchoRunning">
+    <div class="global-wrapper">
+        <div class="notif-container">
+            <div class="alert alert-info">
+                <strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le
+                serveur.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- notification synchro en erreurs -->
+<div class="overlay-container" *ngIf="synchoFail">
+    <div class="global-wrapper">
+        <div class="notif-container">
+            <div class="alert alert-erreur">
+                <strong>Synchronisation en erreur !</strong> Une ou plusieurs se sont produites durant la
+                synchronisation de vos données.
+                <a class="link" routerLink="/synchro">En savoir plus</a>
+            </div>
+        </div>
     </div>
 </div>

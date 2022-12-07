@@ -9,9 +9,9 @@ export class AppDB extends Dexie {
 
     constructor() {
         super('PwaDb');
-        this.version(13).stores({
+        this.version(14).stores({
             todoLists: 'id, recordType',
-            todoItems: 'id, todoListId, recordType',
+            todoItems: 'id, todoListId, recordType, urlAPi, urlPage',
             cacheable: 'key',
         });
         // this.on('populate', () => this.populate());

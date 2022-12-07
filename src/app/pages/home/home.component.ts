@@ -14,13 +14,13 @@ import { SynchroService } from '../../../services/synchro.service';
   selector: 'page-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss'],
-  providers: [SynchroService]
 })
 export class HomeComponent implements OnInit {
   listName = 'My new list';
   // todoLists: TodoList[] = [];
   connectionStatus!: IConnectionStatusValue;
   synchoRunning: boolean = false
+  synchoFail: boolean = false
 
   constructor(
     private connectionStatusService: ConnectionStatusService,
@@ -41,9 +41,11 @@ export class HomeComponent implements OnInit {
     })
 
     this.crudApiService.onRefreshList.subscribe(() => {
-      console.log("📍Refresh the list")
-
       this.getListsDatas()
+    })
+
+    this.synchroService.onSynchroErrors.subscribe((itemsOnErrors: number) => {
+      this.synchoFail = itemsOnErrors > 0
     })
   }
 
@@ -85,9 +87,11 @@ export class HomeComponent implements OnInit {
 
       await this.getListsDatas()
 
-      await this.sleep(2000)
+      if(this.synchoRunning) {
+        await this.sleep(2000)
 
-      this.synchoRunning = false
+        this.synchoRunning = false
+      }
 
       this.cdr.detectChanges()
     } else {

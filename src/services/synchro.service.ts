@@ -1,42 +1,21 @@
 import { Injectable } from '@angular/core';
-import { HelperService } from 'cocori-ng/src/feature-core';
+import { Subject } from 'rxjs';
 
 import { DbItem, DbList, Element, ISynchroRecordType, ListItems } from '../models/todos.model';
 import { CacheableService } from './cacheable';
 import { CrudApiService } from './crud-api.service';
 import { db } from './db';
 
-@Injectable()
+@Injectable({
+    providedIn: 'root',
+})
 export class SynchroService {
+    public onSynchroErrors: Subject<number> = new Subject<number>();
+    public itemsOnErrors: DbItem[] = []
 
     constructor(
         private crudApiService: CrudApiService,
-        private cacheableService: CacheableService,
-        private helperService: HelperService) { }
-
-    // async serverToIndexedDB(listsToAdd: TodoList[]): Promise<any> {
-    //     await Promise.all(listsToAdd.map(async (list: TodoList) => {
-
-    //         const idListAdded: number = await db.todoLists.add({
-    //             id: this.helperService.generateGuid(),
-    //             name: list.name,
-    //         })
-
-    //         if (list.items?.length) {
-    //             await Promise.all(list.items.map(async (item: TodoItem) => {
-    //                 if (item.name) {
-    //                     await db.todoItems.add({
-    //                         name: item.name,
-    //                         id: this.helperService.generateGuid(),
-    //                         todoListId: idListAdded,
-    //                     })
-    //                 } else {
-    //                     await 1
-    //                 }
-    //             }))
-    //         }
-    //     }))
-    // }
+        private cacheableService: CacheableService) { }
 
     async checkForSync(): Promise<boolean> {
         const numberListToSync: number = await db.todoLists.toCollection().count()

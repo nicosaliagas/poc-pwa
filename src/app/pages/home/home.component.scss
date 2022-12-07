@@ -13,20 +13,34 @@
   }
 }
 
-.notif-container {
-  position: static;
-  margin-bottom: 0px;
+.overlay-container {
+  position: fixed;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
 
+.global-wrapper {
   justify-content: center;
   align-items: flex-end;
   display: flex;
-  position: fixed;
+  position: absolute;
   z-index: 1000;
   pointer-events: none;
   top: 0;
   left: 0;
   height: 100%;
   width: 100%;
+}
+
+.notif-container {
+  position: static;
+  margin-bottom: 0px;
+  display: flex;
+  z-index: 1000;
+  pointer-events: auto;
 }
 
 .alert {
@@ -40,9 +54,20 @@
   padding: 14px 16px;
   min-height: 48px;
   transform-origin: center;
-
-  background-color: #2196f3;
   color: white;
+
+  &.alert-info {
+    background-color: #2196f3;
+  }
+
+  &.alert-erreur {
+    background-color: #ec4735;
+  }
+
+  .link {
+    color: #000;
+    font-size: 12px;
+  }
 }
 
 .closebtn {

@@ -68,6 +68,7 @@ export class CrudApiService {
         let datas: Element = { id: itemId, name: itemTitle }
 
         const list: ListItems = <ListItems>this.lists.find((list: Element) => list.id === listId)
+        const apiUrl: string = `${this.environmentService.jsonServer}/${flagErrorHttp ? 'listxxx' : 'list'}/${listId}`
 
         if (!list) {
             throw 'error: liste introuvable pour ajouter l\'item';
@@ -83,11 +84,11 @@ export class CrudApiService {
         }
 
         try {
-            await firstValueFrom(<any>this.httpClient.put(`${this.environmentService.jsonServer}/${flagErrorHttp ? 'listxxx' : 'list'}/${listId}`, list));
+            await firstValueFrom(<any>this.httpClient.put(`${apiUrl}`, list));
         } catch {
             if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
                 await this.cacheableService.cacheDatas('listsItems', this.lists)
-                await this.crudDbService.addListItem(<DbItem>{ ...datas, listId: listId, recordType: ISynchroRecordType.ADD })
+                await this.crudDbService.addListItem(<DbItem>{ ...datas, listId: listId, recordType: ISynchroRecordType.ADD, urlAPi: apiUrl, urlPage: window.location.href })
             }
 
             throw 'error';

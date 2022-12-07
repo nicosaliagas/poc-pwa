@@ -24,6 +24,8 @@ export interface DbList extends Element {
 export interface DbItem extends Element {
     listId: string;
     recordType: string;
+    urlAPi: string;
+    urlPage: string;
 }
 
 export interface Cacheable {

@@ -3,9 +3,11 @@ import { Injectable } from '@angular/core';
 import { StacktraceModel } from 'cocori-ng/src/feature-core';
 import { catchError, mergeMap, Observable, of, retryWhen, tap, throwError, timer } from 'rxjs';
 
-import { FakeHtppError } from '../models/todos.model';
+import { DbItem, FakeHtppError, ISynchroRecordType } from '../models/todos.model';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
+import { db } from './db';
 import { RequestQueueService } from './request-queue.service';
+import { SynchroService } from './synchro.service';
 
 @Injectable({
   providedIn: 'root',
@@ -17,17 +19,17 @@ export class ErrorInterceptorService implements HttpInterceptor {
   retryMaxAttempts = 0;
   statusForAttempts: number[] = [0, 500]
 
+
   private refreshTokenInProgress = false;
 
   constructor(
     private requestQueueService: RequestQueueService,
+    private synchroService: SynchroService,
     private connectionStatusService: ConnectionStatusService) { }
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<any> {
     this.next = next;
     this.request = request;
-
-    console.log("intercept  httprequest >>>", request)
 
     const body: FakeHtppError = request.body
 
@@ -57,7 +59,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
     });
   }
 
-  private handleError(error: HttpErrorResponse | any) {
+  private async handleError(error: HttpErrorResponse | any) {
     const errorStacktrace: StacktraceModel = { httpError: error, dateError: new Date().toString() }
 
     console.log('errors', errorStacktrace)
@@ -72,13 +74,43 @@ export class ErrorInterceptorService implements HttpInterceptor {
         }
 
         break;
-      
+
       case 404:
+        /** on intercepte l'erreur lorsque l'appel qui synchronise la data plante */
+
+        const urlFailedToCompare: string = this.request.urlWithParams.replace('xxx', '')
+        let synchroErrorNum: number = 0
+
         console.log("😱😱😱 Erreur de synchro !!😱😱😱", this.request)
 
         console.log("📍 Url", this.request.urlWithParams)
         console.log("📍 Method", this.request.method)
         console.log("📍 Body", this.request.body)
+
+        /** Vérifier s'il y a des éléments flagués  en attente */
+        const itemsToAdd: DbItem[] = await db.todoItems.where({
+          recordType: ISynchroRecordType.ADD,
+        }).toArray()
+
+
+        console.log("📍 Url (sans les 3x)", urlFailedToCompare)
+        console.log("📍 Items waiting", itemsToAdd)
+
+        let itemsOnErrors: DbItem[] = []
+
+        itemsToAdd.forEach((item: DbItem) => {
+          if (item.urlAPi === urlFailedToCompare) {
+            console.log("biatch ! there is an error 🤡", item)
+
+            itemsOnErrors.push(item)
+            synchroErrorNum++
+          }
+        })
+
+        setTimeout(() => {
+          this.synchroService.itemsOnErrors = itemsOnErrors
+          this.synchroService.onSynchroErrors.next(synchroErrorNum)
+        }, 2000);
 
         break;
 
