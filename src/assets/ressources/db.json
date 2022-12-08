@@ -85,16 +85,42 @@
         {
           "id": "98b034ac-ca1c-4a77-87ea-d2a925c8d3c4",
           "name": "Mushroom - Chanterelle Frozen"
+        },
+        {
+          "id": "54ef3043-0964-4d72-8b4b-08ab4626ba85",
+          "name": "XX1"
         }
       ]
     },
     {
-      "id": "bf4f8f6d-4af8-fa14-f60e-56c93026942c",
-      "name": "Bonjour",
+      "id": "c60f162c-3608-5fd9-9dab-d6256c9ce595",
+      "name": "Jeudi",
       "items": [
         {
-          "id": "7bb6f898-2da7-e2e1-a02c-50e2f6ec71bd",
-          "name": "XX1"
+          "id": "68da92ec-8ae2-a25d-372d-68c17869b0ff",
+          "name": "8h-9h: running"
+        },
+        {
+          "id": "b237cfb8-893f-7927-9171-d3dc19242294",
+          "name": "9h-10h : muscu"
+        },
+        {
+          "id": "df5de255-5ed1-b202-e6e5-4c1b20ab3ac8",
+          "name": "10h-11h : repos"
+        },
+        {
+          "id": "3b6b8611-e0db-93b7-341e-e6e6f7903382",
+          "name": "11h-12h : muscu"
+        }
+      ]
+    },
+    {
+      "id": "3b43ab18-21be-4d9f-1568-4e6f576dd243",
+      "name": "Vendredi",
+      "items": [
+        {
+          "id": "2716a9c3-5962-350d-a384-16ea9525cdf5",
+          "name": "8h-9h : faire les courses"
         }
       ]
     }

@@ -107,8 +107,9 @@ export class ErrorInterceptorService implements HttpInterceptor {
           }
         })
 
+        this.synchroService.itemsOnErrors = itemsOnErrors
+
         setTimeout(() => {
-          this.synchroService.itemsOnErrors = itemsOnErrors
           this.synchroService.onSynchroErrors.next(synchroErrorNum)
         }, 2000);
 

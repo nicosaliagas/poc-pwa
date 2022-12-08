@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Inject, Injectable } from '@angular/core';
 import { HelperService, HttpService } from 'cocori-ng/src/feature-core';
-import { firstValueFrom, map, Observable, Subject } from 'rxjs';
+import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 import { DbItem, DbList, Element, ISynchroRecordType, ListItems } from '../models/todos.model';
 import { CacheableService } from './cacheable';
@@ -26,24 +26,10 @@ export class CrudApiService {
         private environmentService: EnvironmentService,
     ) { }
 
-    private GetLists(): Observable<any> {
-        return this.httpClient.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}`, {});
-    }
-
-    private GetListDatas(listName: string): Observable<any> {
-        return this.httpClient.get(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listName}`, {});
-    }
-
     public GetListsItemsAPI(): Observable<any> {
         this.lists.splice(0, this.lists.length)
 
         return this.httpClient.get(`${this.environmentService.jsonServer}/list`, {})
-    }
-
-    private getListItems(listName: string) {
-        return this.GetListDatas(listName).pipe(
-            map(todoItems => ({ id: listName, title: listName, todoItems: todoItems }))
-        )
     }
 
     async postList(listId: string, listName: string) {
@@ -69,6 +55,7 @@ export class CrudApiService {
 
         const list: ListItems = <ListItems>this.lists.find((list: Element) => list.id === listId)
         const apiUrl: string = `${this.environmentService.jsonServer}/${flagErrorHttp ? 'listxxx' : 'list'}/${listId}`
+        const urlPage: string = HelperService.enleverNomDomaineUrl(window.location.href)
 
         if (!list) {
             throw 'error: liste introuvable pour ajouter l\'item';
@@ -88,7 +75,7 @@ export class CrudApiService {
         } catch {
             if (this.connectionStatusService.networkStatus === IConnectionStatusValue.OFFLINE) {
                 await this.cacheableService.cacheDatas('listsItems', this.lists)
-                await this.crudDbService.addListItem(<DbItem>{ ...datas, listId: listId, recordType: ISynchroRecordType.ADD, urlAPi: apiUrl, urlPage: window.location.href })
+                await this.crudDbService.addListItem(<DbItem>{ ...datas, listId: listId, recordType: ISynchroRecordType.ADD, urlAPi: apiUrl, urlPage: urlPage })
             }
 
             throw 'error';
@@ -99,15 +86,7 @@ export class CrudApiService {
         await firstValueFrom(<any>this.httpClient.put(`${this.environmentService.jsonServer}/list/${list.id}`, list));
     }
 
-    DeleteListRessource(listName: string): Observable<any> {
-        return this.httpClient.delete(`https://crudcrud.com/api/${this.environmentService.crudcrudKey}/${listName}`, {});
-    }
-
-    BadFakeRequest(): Observable<any> {
-        return <any>this.httpClient.post(`https://crudcrud.com/api/XXXXXXXX`, {})
-    }
-
-    GetSelectTodos(): Observable<any> {
+   public GetSelectTodos(): Observable<any> {
         return this.httpClient.get(`${this.environmentService.jsonServer}/selectTodos`, {})
     }
 }

@@ -1,4 +1,4 @@
-<div class="synchro-label">Synchronisation en erreur !</div>
+<div class="synchro-label">Synchronisations en erreur !</div>
 
 <div>
     Nombres d'appels échoués : {{itemsOnErrors.length}}
@@ -7,7 +7,8 @@
 <div class="errors-list">
     <div *ngFor="let item of itemsOnErrors; trackBy: identify">
         <div class="item-list">
-            <span>Synchro : {{item.id}}</span> <a class="link" routerLink="/synchro">Accéder</a>
+            <span>Synchro : {{item.id}}</span> <a class="link" [routerLink]="[item.urlPage]"
+                [queryParams]="{ load: item.id}">Accéder</a>
         </div>
     </div>
 </div>

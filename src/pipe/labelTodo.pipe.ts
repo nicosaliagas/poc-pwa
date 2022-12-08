@@ -12,7 +12,7 @@ export class LabelTodoPipe implements PipeTransform {
   constructor(private cacheableService: CacheableService, private crudApiService: CrudApiService) { }
 
   private async getDefaultValue() {
-    this.defaultTodos = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+    this.defaultTodos = await this.cacheableService.getCacheDatas('selectTodos', [])
   }
 
   async transform(idItem: any, args?: any) {
@@ -20,6 +20,6 @@ export class LabelTodoPipe implements PipeTransform {
 
     const todo = <Element>this.defaultTodos.find((todo: Element) => todo.id === idItem)
 
-    return todo.name;
+    return todo?.name;
   }
 }

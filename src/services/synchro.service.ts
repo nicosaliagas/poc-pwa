@@ -6,6 +6,8 @@ import { CacheableService } from './cacheable';
 import { CrudApiService } from './crud-api.service';
 import { db } from './db';
 
+export const FAKE_ID: string = 'FAKE_ID'
+
 @Injectable({
     providedIn: 'root',
 })
@@ -79,7 +81,7 @@ export class SynchroService {
 
                     /** on teste si l'id de l'item passé en paramêtre existe toujours en bdd */
                     if (!item.name) {
-                        const defaultTodos: Element[] = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+                        const defaultTodos: Element[] = await this.cacheableService.getCacheDatas('selectTodos', [])
 
                         const defaultTodoFound: number = defaultTodos.findIndex((todo: Element) => todo.id === item.id)
 
@@ -102,4 +104,26 @@ export class SynchroService {
             }
         }));
     }
+
+    async addFakeItemSelect() {
+        const defaultTodos: Element[] = await this.cacheableService.getCacheDatas('selectTodos', [])
+
+        defaultTodos.push({ id: FAKE_ID, name: "élément supprimé" })
+
+        await this.cacheableService.cacheDatas('selectTodos', defaultTodos)
+    }
+
+    async removeFakeItemSelect() {
+        const defaultTodos: Element[] = await this.cacheableService.getCacheDatas('selectTodos', [])
+
+        const defaultTodoFound: number = defaultTodos.findIndex((todo: Element) => todo.id === FAKE_ID)
+
+        if (defaultTodoFound !== -1) {
+            defaultTodos.splice(defaultTodoFound, 1);
+        }
+
+        await this.cacheableService.cacheDatas('selectTodos', defaultTodos)
+    }
+
+
 }

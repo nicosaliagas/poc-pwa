@@ -67,7 +67,7 @@ export class ItemListComponent {
   }
 
   private async getValues() {
-    this.defaultTodos = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+    this.defaultTodos = await this.cacheableService.getCacheDatas('selectTodos', [])
     this.cdr.detectChanges()
   }
 

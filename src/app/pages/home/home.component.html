@@ -16,8 +16,8 @@
     <button type="submit" (click)="addNewList()">Add new list</button>
 </div>
 
-<!-- from api crud -->
-<div class="newListContainer">
+
+<div class="newListContainer" *ngIf="crudApiService.lists">
     <div *ngFor="let list of crudApiService.lists; trackBy: identifyList">
         <item-list [list]="list"></item-list>
     </div>
@@ -32,9 +32,7 @@
 <div class="overlay-container" *ngIf="synchoRunning">
     <div class="global-wrapper">
         <div class="notif-container">
-            <div class="alert alert-info">
-                <strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le
-                serveur.
+            <div class="alert alert-info" [innerHtml]="notificationInfoMessage">
             </div>
         </div>
     </div>
@@ -45,9 +43,14 @@
     <div class="global-wrapper">
         <div class="notif-container">
             <div class="alert alert-erreur">
-                <strong>Synchronisation en erreur !</strong> Une ou plusieurs se sont produites durant la
-                synchronisation de vos données.
-                <a class="link" routerLink="/synchro">En savoir plus</a>
+                <div>
+                    <strong>Synchronisation en erreur !</strong> Une ou plusieurs erreurs se sont produites durant la
+                    synchronisation de vos données.
+                </div>
+                <div>
+                    <a class="link" routerLink="/synchro">En savoir plus</a>
+                    <a class="link" href="javascript:void(0)" (click)="fermerNotif()" style="padding-left: 5px;">Fermer</a>
+                </div>
             </div>
         </div>
     </div>

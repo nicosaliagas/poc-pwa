@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { HelperService, StringService } from 'cocori-ng/src/feature-core';
 import { CrudApiService } from 'src/services/crud-api.service';
 
@@ -7,7 +8,7 @@ import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
 import { CrudDbService } from '../../../services/crud-db.service';
 import { RequestQueueService } from '../../../services/request-queue.service';
-import { SynchroService } from '../../../services/synchro.service';
+import { FAKE_ID, SynchroService } from '../../../services/synchro.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -21,6 +22,8 @@ export class HomeComponent implements OnInit {
   connectionStatus!: IConnectionStatusValue;
   synchoRunning: boolean = false
   synchoFail: boolean = false
+  paramsLoadSynchroFailed!: string
+  notificationInfoMessage!: string
 
   constructor(
     private connectionStatusService: ConnectionStatusService,
@@ -28,12 +31,16 @@ export class HomeComponent implements OnInit {
     public crudApiService: CrudApiService,
     private cacheableService: CacheableService,
     private synchroService: SynchroService,
+    private route: ActivatedRoute,
     private helperService: HelperService,
     private crudDbService: CrudDbService,
-    private cdr: ChangeDetectorRef,) { }
+    private cdr: ChangeDetectorRef,) {
+    this.route.queryParams.subscribe((params: any) => {
+      this.paramsLoadSynchroFailed = params['load']
+    })
+  }
 
   ngOnInit(): void {
-
     this.connectionStatusService.onConnectionStatutUpdated.subscribe((data: IConnectionStatusValue) => {
       this.connectionStatus = data
 
@@ -51,43 +58,54 @@ export class HomeComponent implements OnInit {
 
   /** Soumettre un post qui sera fail lors de la synchro */
   public async submitFailPost() {
-    // this.crudApiService.BadFakeRequest().subscribe()
-
     /** Liste existante mais item de liste todo inexistant en base */
-    await this.crudApiService.postItem("83D00680-FCCB-4233-B723-9D87089EAFA3", "idBadTodo", '')
+    await this.crudApiService.postItem("83D00680-FCCB-4233-B723-9D87089EAFA3", FAKE_ID, '')
 
     console.log("🤡 callBadRequest ")
   }
 
   private async changeConnectionStatus() {
+    /** la page est réinitialisée */
+    this.crudApiService.lists.splice(0, this.crudApiService.lists.length)
+
+    this.cdr.detectChanges()
+
+    /** Pour les tests : on retire le fake item dans la liste déroulante */
+    await this.synchroService.removeFakeItemSelect()
+
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-
-      /** Méthode via appels http stacked */
-      // if (this.requestQueueService.requestsToSync.length) {
-      //   this.synchoRunning = true
-
-      //   await this.requestQueueService.executeQueuedRequests()
-
-      //   console.log("on est bon là ?! 👌")
-      // }
 
       /** Méthode via élément taggué dans IndexedDb */
       const anythingToSync: boolean = await this.synchroService.checkForSync()
+
       if (anythingToSync) {
+        /** il faut charger les infos mises en cache */
+        this.crudApiService.lists = await this.cacheableService.getCacheDatas('listsItems', [])
+
+        if (typeof this.paramsLoadSynchroFailed !== 'undefined') {
+          this.notificationInfoMessage =
+            `<strong>Synchronisation en erreur chargée !</strong>`
+
+          /** Pour les tests : on ajoute l'item manquant dans la liste déroulante */
+          await this.synchroService.addFakeItemSelect()
+        } else {
+          this.notificationInfoMessage =
+            `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
+
+          await this.synchroIndexedDbToServer()
+        }
+
         this.synchoRunning = true
 
         this.cdr.detectChanges()
-
-        /** il faut charger les infos mises en cache */
-
-        this.crudApiService.lists = await this.cacheableService.getCacheDatas('listsItems', [])
-
-        await this.synchroIndexedDbToServer()
+      } else {
+        /** on récupère la liste déroulante des todos par défaut et on la met en cache */
+        await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
       }
 
       await this.getListsDatas()
 
-      if(this.synchoRunning) {
+      if (this.synchoRunning) {
         await this.sleep(2000)
 
         this.synchoRunning = false
@@ -142,5 +160,9 @@ export class HomeComponent implements OnInit {
   private async synchroIndexedDbToServer() {
     await this.synchroService.syncListsWithServer()
     await this.synchroService.syncItemsWithServer()
+  }
+
+  public fermerNotif() {
+    this.synchoFail = false
   }
 }
