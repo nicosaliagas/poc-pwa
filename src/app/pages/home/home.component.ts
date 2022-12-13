@@ -6,7 +6,7 @@ import { CrudApiService } from 'src/services/crud-api.service';
 import { ListItems } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
-import { CrudDbService } from '../../../services/crud-db.service';
+import { DbService } from '../../../services/db.service';
 import { RequestQueueService } from '../../../services/request-queue.service';
 import { FAKE_ID, SynchroService } from '../../../services/synchro.service';
 
@@ -33,7 +33,7 @@ export class HomeComponent implements OnInit {
     private synchroService: SynchroService,
     private route: ActivatedRoute,
     private helperService: HelperService,
-    private crudDbService: CrudDbService,
+    private crudDbService: DbService,
     private cdr: ChangeDetectorRef,) {
     this.route.queryParams.subscribe((params: any) => {
       this.paramsLoadSynchroFailed = params['load']
@@ -122,13 +122,16 @@ export class HomeComponent implements OnInit {
   }
 
   public async getListsDatas() {
-    const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
+    if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
+      await this.synchroService.syncServerToDB()
+    }
 
-    console.log("🔥todoLists from api/local >> ", datas)
+    const datas = await this.crudDbService.paginateListsDB(-1, -1)
 
     this.crudApiService.lists = datas
 
     this.cdr.detectChanges()
+    // const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
   }
 
   async addNewList() {

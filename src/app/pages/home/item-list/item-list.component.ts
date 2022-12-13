@@ -6,7 +6,7 @@ import { AddTodoFrm, Element, ListItems } from '../../../../models/todos.model';
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
 import { CrudApiService } from '../../../../services/crud-api.service';
-import { CrudDbService } from '../../../../services/crud-db.service';
+import { DbService } from '../../../../services/db.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -27,7 +27,7 @@ export class ItemListComponent {
     private cdr: ChangeDetectorRef,
     private helperService: HelperService,
     private fb: FormBuilder,
-    private crudDbService: CrudDbService,
+    private crudDbService: DbService,
     private cacheableService: CacheableService,
     private connectionStatusService: ConnectionStatusService,
     private crudApiService: CrudApiService,) { }

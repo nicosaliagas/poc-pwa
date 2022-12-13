@@ -88,7 +88,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
         console.log("📍 Body", this.request.body)
 
         /** Vérifier s'il y a des éléments flagués  en attente */
-        const itemsToAdd: DbItem[] = await db.todoItems.where({
+        const itemsToAdd: DbItem[] = await db.itemFlag.where({
           recordType: ISynchroRecordType.ADD,
         }).toArray()
 

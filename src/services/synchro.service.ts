@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 
 import { DbItem, DbList, Element, ISynchroRecordType, ListItems } from '../models/todos.model';
 import { CacheableService } from './cacheable';
 import { CrudApiService } from './crud-api.service';
 import { db } from './db';
+import { DbService } from './db.service';
 
 export const FAKE_ID: string = 'FAKE_ID'
 
@@ -17,35 +18,44 @@ export class SynchroService {
 
     constructor(
         private crudApiService: CrudApiService,
+        private crudDbService: DbService,
         private cacheableService: CacheableService) { }
 
     async checkForSync(): Promise<boolean> {
-        const numberListToSync: number = await db.todoLists.toCollection().count()
-        const numberItemsListToSync: number = await db.todoItems.toCollection().count()
+        const numberListToSync: number = await db.listFlag.toCollection().count()
+        const numberItemsListToSync: number = await db.itemFlag.toCollection().count()
 
         return numberListToSync > 0 || numberItemsListToSync > 0
     }
 
+    async syncServerToDB() {
+        await this.crudDbService.resetListTable()
+
+        const datasFromServer = await firstValueFrom(this.crudApiService.GetListsItemsAPI())
+
+        await this.crudDbService.addListsDB(datasFromServer)
+    }
+
     async syncListsWithServer() {
-        const listsToAdd: DbList[] = await db.todoLists.where({
+        const listsToAdd: DbList[] = await db.listFlag.where({
             recordType: ISynchroRecordType.ADD,
         }).toArray()
 
         await Promise.all(listsToAdd.map(async (list: DbList) => {
             await this.crudApiService.postList(list.id, list.name)
                 .then(async () => {
-                    await db.todoLists.where('id').equals(list.id).delete();
+                    await db.listFlag.where('id').equals(list.id).delete();
                 })
                 .catch(_ => { })
         }));
     }
 
     async syncItemsWithServer() {
-        const listsToAdd: DbList[] = await db.todoLists.where({
+        const listsToAdd: DbList[] = await db.listFlag.where({
             recordType: ISynchroRecordType.ADD,
         }).toArray()
 
-        const itemsToAdd: DbItem[] = await db.todoItems.where({
+        const itemsToAdd: DbItem[] = await db.itemFlag.where({
             recordType: ISynchroRecordType.ADD,
         }).toArray()
 
@@ -64,7 +74,7 @@ export class SynchroService {
             const elements: Element[] = <Element[]>(<DbItem[]>items).map(({ id, name }) => ({ id, name }))
 
             /** name à vide car pas dispo à cet étape */
-            listsItemsToAdd.push({ id: <string>key, name: '', items: elements })
+            // listsItemsToAdd.push({ id: <string>key, name: '', items: elements })
         })
 
         /** on synchronise suivant si c'est une nouvelle liste ou seulement des ajouts d'item sur des listes existantes */
@@ -88,9 +98,9 @@ export class SynchroService {
                         if (defaultTodoFound === -1) {
                             console.log(`💩 L'id ${item.id} n'existe pas !`)
 
-                            await this.crudApiService.postItem(listItems.id, item.id, item.name, true)
-                                .then(_ => { console.log("succès") })
-                                .catch(_ => { console.log("failure") })
+                            // await this.crudApiService.postItem(listItems.id, item.id, item.name, true)
+                            //     .then(_ => { console.log("succès") })
+                            //     .catch(_ => { console.log("failure") })
 
                             console.log("Suite de la synchro .... 👌")
                             return;
@@ -98,7 +108,7 @@ export class SynchroService {
                     }
 
                     await this.crudApiService.postItem(listItems.id, item.id, item.name)
-                        .then(async () => await db.todoItems.where('id').equals(item.id).delete())
+                        .then(async () => await db.itemFlag.where('id').equals(item.id).delete())
                         .catch(_ => { })
                 }));
             }

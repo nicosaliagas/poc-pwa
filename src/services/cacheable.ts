@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { firstValueFrom, Observable } from 'rxjs';
 
 import { Cacheable } from '../models/todos.model';
-import { ConnectionStatusService } from './connection-status.service';
+import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { db } from './db';
 
 @Injectable({
@@ -48,7 +48,7 @@ export class CacheableService {
             key: key,
         }).toArray()
 
-        try {
+        if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
             // retrieve the data from backend.
             result = await firstValueFrom(fn());
 
@@ -63,11 +63,9 @@ export class CacheableService {
                     value: JSON.stringify(result),
                 })
             }
-        } catch {
+        } else {
             // use the cached data if available, otherwise the default value.
             result = cached.length === 1 ? JSON.parse(cached[0].value) : defaultValue;
-
-            console.log("retrieve data from local")
         }
 
         return result;

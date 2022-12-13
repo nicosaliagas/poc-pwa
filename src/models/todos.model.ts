@@ -2,11 +2,13 @@ export interface ListItems {
     id: string;
     name: string;
     items: Element[];
+    sync?: ISynchroRecordType
 }
 
 export interface Element {
     id: string;
     name: string;
+    sync?: ISynchroRecordType
 }
 
 export interface List extends Element { }
@@ -14,6 +16,7 @@ export interface Item extends Element { }
 
 export enum ISynchroRecordType {
     ADD = 'add',
+    PUT = 'put',
     DELETE = 'delete',
 }
 
