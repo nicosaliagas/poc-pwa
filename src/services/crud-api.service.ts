@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { HelperService, HttpService } from 'cocori-ng/src/feature-core';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
-import { Element, ISynchroRecordType, ListItems } from '../models/todos.model';
+import { Element, Flags, ListItems, StatusSync } from '../models/todos.model';
 import { CacheableService } from './cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { db } from './db';
@@ -33,16 +33,21 @@ export class CrudApiService {
         return this.httpClient.get(`${this.environmentService.jsonServer}/list`, {})
     }
 
-    async postList(listId: string, listName: string) {
-        const newList: ListItems = <ListItems>{ id: listId, name: listName, items: [] }
+    async postList(listId: string, listName: string, listItems: Element[] = []) {
+        const newList: ListItems = <ListItems>{ id: listId, name: listName, items: listItems }
 
         if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
             await firstValueFrom(this.httpClient.post(`${this.environmentService.jsonServer}/list`, newList));
         } else {
             // this.lists.push(newList)
             // await this.cacheableService.cacheDatas('listsItems', this.lists)
-            await this.dbService.addListDB(<ListItems>{ id: newList.id, name: newList.name, items: [], sync: ISynchroRecordType.ADD })
+            await this.dbService.addListDB(<ListItems>{ id: newList.id, name: newList.name, items: [] })
+            await this.dbService.addFlags(<Flags>{ id: newList.id, items: [], status: StatusSync.ADD })
         }
+    }
+
+    async putList(list: ListItems) {
+        await firstValueFrom(this.httpClient.put(`${this.environmentService.jsonServer}/list`, list));
     }
 
     async postItem(listId: string, itemId: string, itemTitle: string) {
@@ -69,11 +74,25 @@ export class CrudApiService {
             // await this.cacheableService.cacheDatas('listsItems', this.lists)
             // await this.dbService.addListItem(<DbItem>{ ...datas, listId: listId, recordType: ISynchroRecordType.ADD, urlAPi: apiUrl, urlPage: urlPage })
             const item: Element = <Element>listOfTheNewItem.items.find((item: Element) => item.id === newItem.id)
-            item.sync = ISynchroRecordType.ADD
 
-            if (typeof listOfTheNewItem.sync === 'undefined') listOfTheNewItem.sync = ISynchroRecordType.PUT
+            // item.sync = ISynchroRecordType.ADD
+            // if (typeof listOfTheNewItem.sync === 'undefined') listOfTheNewItem.sync = ISynchroRecordType.PUT
 
-            await this.dbService.addListItem(<ListItems>listOfTheNewItem)
+            await this.dbService.putListItem(<ListItems>listOfTheNewItem)
+
+            const listFlagged: Flags = <Flags>await db.flags.where('id').equals(listId).first()
+
+            if (!listFlagged) {
+                await this.dbService.addFlags(<Flags>{
+                    id: listId, items: [
+                        { id: newItem.id, status: StatusSync.ADD }
+                    ]
+                })
+            } else {
+                listFlagged.items.push({ id: newItem.id, status: StatusSync.ADD })
+
+                await this.dbService.putFlags(listFlagged)
+            }
         }
     }
 

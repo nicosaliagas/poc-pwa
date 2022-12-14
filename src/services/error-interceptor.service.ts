@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { StacktraceModel } from 'cocori-ng/src/feature-core';
 import { catchError, mergeMap, Observable, of, retryWhen, tap, throwError, timer } from 'rxjs';
 
-import { DbItem, FakeHtppError, ISynchroRecordType } from '../models/todos.model';
+import { DbItem, FakeHtppError, StatusSync } from '../models/todos.model';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
 import { db } from './db';
 import { RequestQueueService } from './request-queue.service';
@@ -89,7 +89,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
 
         /** Vérifier s'il y a des éléments flagués  en attente */
         const itemsToAdd: DbItem[] = await db.itemFlag.where({
-          recordType: ISynchroRecordType.ADD,
+          recordType: StatusSync.ADD,
         }).toArray()
 
 

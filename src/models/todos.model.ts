@@ -2,22 +2,25 @@ export interface ListItems {
     id: string;
     name: string;
     items: Element[];
-    sync?: ISynchroRecordType
 }
 
 export interface Element {
     id: string;
     name: string;
-    sync?: ISynchroRecordType
 }
 
-export interface List extends Element { }
-export interface Item extends Element { }
+export interface Flags extends FlagElement {
+    items: FlagElement[];
+}
 
-export enum ISynchroRecordType {
+export interface FlagElement {
+    id: string;
+    status: StatusSync
+}
+
+export enum StatusSync {
     ADD = 'add',
-    PUT = 'put',
-    DELETE = 'delete',
+    ERROR = 'error',
 }
 
 export interface DbList extends Element {

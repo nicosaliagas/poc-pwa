@@ -51,9 +51,24 @@ export class HomeComponent implements OnInit {
       this.getListsDatas()
     })
 
-    this.synchroService.onSynchroErrors.subscribe((itemsOnErrors: number) => {
-      this.synchoFail = itemsOnErrors > 0
-    })
+    // this.synchroService.onSynchroErrors.subscribe((itemsOnErrors: number) => {
+    //   this.synchoFail = itemsOnErrors > 0
+    // })
+  }
+
+  public async getListsDatas() {
+    /** appel serveur pour récupérer toutes les listes items */
+    if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
+      await this.synchroService.syncServerToDB()
+    }
+
+    /** on pagine ou pas la base pour filtrer la liste à afficher */
+    const datas = await this.crudDbService.paginateListsDB(-1, -1)
+
+    this.crudApiService.lists = datas
+
+    this.cdr.detectChanges()
+    // const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
   }
 
   /** Soumettre un post qui sera fail lors de la synchro */
@@ -64,14 +79,15 @@ export class HomeComponent implements OnInit {
     console.log("🤡 callBadRequest ")
   }
 
+  /** On va vérifier s'il y a des éléments à synchroniser */
   private async changeConnectionStatus() {
-    /** la page est réinitialisée */
+    /** la page est réinitialisée, la liste est vidée avant d'être affichée à nouveau */
     this.crudApiService.lists.splice(0, this.crudApiService.lists.length)
 
     this.cdr.detectChanges()
 
     /** Pour les tests : on retire le fake item dans la liste déroulante */
-    await this.synchroService.removeFakeItemSelect()
+    // await this.synchroService.removeFakeItemSelect()
 
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
 
@@ -87,7 +103,7 @@ export class HomeComponent implements OnInit {
             `<strong>Synchronisation en erreur chargée !</strong>`
 
           /** Pour les tests : on ajoute l'item manquant dans la liste déroulante */
-          await this.synchroService.addFakeItemSelect()
+          // await this.synchroService.addFakeItemSelect()
         } else {
           this.notificationInfoMessage =
             `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
@@ -121,19 +137,6 @@ export class HomeComponent implements OnInit {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
 
-  public async getListsDatas() {
-    if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
-      await this.synchroService.syncServerToDB()
-    }
-
-    const datas = await this.crudDbService.paginateListsDB(-1, -1)
-
-    this.crudApiService.lists = datas
-
-    this.cdr.detectChanges()
-    // const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
-  }
-
   async addNewList() {
     this.listName = new StringService(this.listName)
       .removeAllSpaces()
@@ -161,8 +164,9 @@ export class HomeComponent implements OnInit {
   }
 
   private async synchroIndexedDbToServer() {
-    await this.synchroService.syncListsWithServer()
-    await this.synchroService.syncItemsWithServer()
+    await this.synchroService.syncFlagsToServer()
+    // await this.synchroService.syncListsWithServer()
+    // await this.synchroService.syncItemsWithServer()
   }
 
   public fermerNotif() {

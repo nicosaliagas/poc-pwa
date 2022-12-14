@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { firstValueFrom, Subject } from 'rxjs';
 
-import { DbItem, DbList, Element, ISynchroRecordType, ListItems } from '../models/todos.model';
+import { DbItem, DbList, Element, Flags, ListItems, StatusSync } from '../models/todos.model';
 import { CacheableService } from './cacheable';
 import { CrudApiService } from './crud-api.service';
 import { db } from './db';
@@ -22,10 +22,8 @@ export class SynchroService {
         private cacheableService: CacheableService) { }
 
     async checkForSync(): Promise<boolean> {
-        const numberListToSync: number = await db.listFlag.toCollection().count()
-        const numberItemsListToSync: number = await db.itemFlag.toCollection().count()
-
-        return numberListToSync > 0 || numberItemsListToSync > 0
+        const numberFlagLists: number = await db.flags.toCollection().count()
+        return numberFlagLists > 0
     }
 
     async syncServerToDB() {
@@ -36,9 +34,35 @@ export class SynchroService {
         await this.crudDbService.addListsDB(datasFromServer)
     }
 
+    async syncFlagsToServer() {
+        const flagsToSync: Flags[] = await db.flags.where({
+            status: StatusSync.ADD,
+        }).toArray()
+
+        console.log("flags to sync >> ", flagsToSync)
+
+        await Promise.all(flagsToSync.map(async (flag: Flags) => {
+            const list: ListItems = <ListItems>await db.lists.where('id').equals(flag.id).first()
+
+            /** la liste doit être poussée avec les items qui lui sont rattachés */
+            if (flag.status === StatusSync.ADD) {
+                await this.crudApiService.postList(list.id, list.name, list.items)
+                    .then(async () => {
+                        await db.flags.where('id').equals(flag.id).delete();
+                    })
+            } else {
+                /** la liste doit être mis à jour avec de nouveaux items */
+                await this.crudApiService.putList(list)
+                    .then(async () => {
+                        await db.flags.where('id').equals(flag.id).delete();
+                    })
+            }
+        }));
+    }
+
     async syncListsWithServer() {
         const listsToAdd: DbList[] = await db.listFlag.where({
-            recordType: ISynchroRecordType.ADD,
+            recordType: StatusSync.ADD,
         }).toArray()
 
         await Promise.all(listsToAdd.map(async (list: DbList) => {
@@ -52,11 +76,11 @@ export class SynchroService {
 
     async syncItemsWithServer() {
         const listsToAdd: DbList[] = await db.listFlag.where({
-            recordType: ISynchroRecordType.ADD,
+            recordType: StatusSync.ADD,
         }).toArray()
 
         const itemsToAdd: DbItem[] = await db.itemFlag.where({
-            recordType: ISynchroRecordType.ADD,
+            recordType: StatusSync.ADD,
         }).toArray()
 
         /** on regroupe les items à synchroniser par id de liste */
@@ -134,6 +158,4 @@ export class SynchroService {
 
         await this.cacheableService.cacheDatas('selectTodos', defaultTodos)
     }
-
-
 }

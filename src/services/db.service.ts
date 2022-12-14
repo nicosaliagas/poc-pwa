@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 
-import { ListItems } from '../models/todos.model';
+import { Flags, ListItems } from '../models/todos.model';
 import { db } from './db';
 
 @Injectable({
@@ -10,9 +10,17 @@ export class DbService {
     async addListDB(list: ListItems): Promise<any> {
         return db.lists.add(list)
     }
-
-    async addListItem(list: ListItems): Promise<any> {
+    
+    async putListItem(list: ListItems): Promise<any> {
         return db.lists.put(list)
+    }
+    
+    async addFlags(list: Flags): Promise<any> {
+        return db.flags.add(list)
+    }
+
+    async putFlags(list: Flags): Promise<any> {
+        return db.flags.put(list)
     }
 
     /** doc : https://dexie.org/docs/Table/Table.bulkAdd() */
