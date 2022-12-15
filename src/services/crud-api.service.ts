@@ -47,7 +47,7 @@ export class CrudApiService {
     }
 
     async putList(list: ListItems) {
-        await firstValueFrom(this.httpClient.put(`${this.environmentService.jsonServer}/list`, list));
+        await firstValueFrom(this.httpClient.put(`${this.environmentService.jsonServer}/list/${list.id}`, list));
     }
 
     async postItem(listId: string, itemId: string, itemTitle: string) {
@@ -86,7 +86,8 @@ export class CrudApiService {
                 await this.dbService.addFlags(<Flags>{
                     id: listId, items: [
                         { id: newItem.id, status: StatusSync.ADD }
-                    ]
+                    ],
+                    status: StatusSync.MODIFY
                 })
             } else {
                 listFlagged.items.push({ id: newItem.id, status: StatusSync.ADD })

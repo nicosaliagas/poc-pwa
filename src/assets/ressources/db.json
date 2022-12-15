@@ -41,6 +41,14 @@
         {
           "id": "d12292f7-6518-4e1c-8700-942c58737aaf",
           "name": "Soup - Clam Chowder, Dry Mix"
+        },
+        {
+          "id": "b15a7e85-9ab0-6bea-8d27-ee535e47ecb9",
+          "name": "xxx"
+        },
+        {
+          "id": "0c8293e9-216f-7bf5-18f7-fa8faa5a23aa",
+          "name": "xxx2"
         }
       ]
     },
@@ -89,9 +97,14 @@
       ]
     },
     {
-      "id": "86bbd67a-6022-25ae-3ac7-7d43c3a4ef46",
+      "id": "55b09b12-c15d-340e-c98b-e47b3621f127",
       "name": "Jeudi",
-      "items": []
+      "items": [
+        {
+          "id": "49123806-a704-6a08-c0ba-fac32e9beaaf",
+          "name": "xxx1"
+        }
+      ]
     }
   ]
 }

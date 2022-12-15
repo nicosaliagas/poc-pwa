@@ -35,11 +35,7 @@ export class SynchroService {
     }
 
     async syncFlagsToServer() {
-        const flagsToSync: Flags[] = await db.flags.where({
-            status: StatusSync.ADD,
-        }).toArray()
-
-        console.log("flags to sync >> ", flagsToSync)
+        const flagsToSync: Flags[] = await db.flags.where('status').notEqual(StatusSync.ERROR).toArray()
 
         await Promise.all(flagsToSync.map(async (flag: Flags) => {
             const list: ListItems = <ListItems>await db.lists.where('id').equals(flag.id).first()
@@ -50,7 +46,7 @@ export class SynchroService {
                     .then(async () => {
                         await db.flags.where('id').equals(flag.id).delete();
                     })
-            } else {
+            } else if (flag.status === StatusSync.MODIFY) {
                 /** la liste doit être mis à jour avec de nouveaux items */
                 await this.crudApiService.putList(list)
                     .then(async () => {

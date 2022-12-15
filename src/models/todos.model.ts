@@ -20,6 +20,7 @@ export interface FlagElement {
 
 export enum StatusSync {
     ADD = 'add',
+    MODIFY = 'modify',
     ERROR = 'error',
 }
 
