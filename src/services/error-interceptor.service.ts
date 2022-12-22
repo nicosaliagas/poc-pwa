@@ -3,9 +3,8 @@ import { Injectable } from '@angular/core';
 import { StacktraceModel } from 'cocori-ng/src/feature-core';
 import { catchError, mergeMap, Observable, of, retryWhen, tap, throwError, timer } from 'rxjs';
 
-import { DbItem, FakeHtppError, StatusSync } from '../models/todos.model';
+import { FakeHtppError } from '../models/todos.model';
 import { ConnectionStatusService, IConnectionStatusValue } from './connection-status.service';
-import { db } from './db';
 import { RequestQueueService } from './request-queue.service';
 import { SynchroService } from './synchro.service';
 
@@ -59,7 +58,7 @@ export class ErrorInterceptorService implements HttpInterceptor {
     });
   }
 
-  private async handleError(error: HttpErrorResponse | any) {
+  private handleError(error: HttpErrorResponse | any) {
     const errorStacktrace: StacktraceModel = { httpError: error, dateError: new Date().toString() }
 
     console.log('errors', errorStacktrace)
@@ -75,45 +74,45 @@ export class ErrorInterceptorService implements HttpInterceptor {
 
         break;
 
-      case 404:
-        /** on intercepte l'erreur lorsque l'appel qui synchronise la data plante */
+      // case 4049:
+      //   /** on intercepte l'erreur lorsque l'appel qui synchronise la data plante */
 
-        const urlFailedToCompare: string = this.request.urlWithParams.replace('xxx', '')
-        let synchroErrorNum: number = 0
+      //   const urlFailedToCompare: string = this.request.urlWithParams.replace('xxx', '')
+      //   let synchroErrorNum: number = 0
 
-        console.log("😱😱😱 Erreur de synchro !!😱😱😱", this.request)
+      //   console.log("😱😱😱 Erreur de synchro !!😱😱😱", this.request)
 
-        console.log("📍 Url", this.request.urlWithParams)
-        console.log("📍 Method", this.request.method)
-        console.log("📍 Body", this.request.body)
+      //   console.log("📍 Url", this.request.urlWithParams)
+      //   console.log("📍 Method", this.request.method)
+      //   console.log("📍 Body", this.request.body)
 
-        /** Vérifier s'il y a des éléments flagués  en attente */
-        const itemsToAdd: DbItem[] = await db.itemFlag.where({
-          recordType: StatusSync.ADD,
-        }).toArray()
+      //   /** Vérifier s'il y a des éléments flagués  en attente */
+      //   const itemsToAdd: DbItem[] = await db.itemFlag.where({
+      //     recordType: StatusSync.ADD,
+      //   }).toArray()
 
 
-        console.log("📍 Url (sans les 3x)", urlFailedToCompare)
-        console.log("📍 Items waiting", itemsToAdd)
+      //   console.log("📍 Url (sans les 3x)", urlFailedToCompare)
+      //   console.log("📍 Items waiting", itemsToAdd)
 
-        let itemsOnErrors: DbItem[] = []
+      //   let itemsOnErrors: DbItem[] = []
 
-        itemsToAdd.forEach((item: DbItem) => {
-          if (item.urlAPi === urlFailedToCompare) {
-            console.log("biatch ! there is an error 🤡", item)
+      //   itemsToAdd.forEach((item: DbItem) => {
+      //     if (item.urlAPi === urlFailedToCompare) {
+      //       console.log("biatch ! there is an error 🤡", item)
 
-            itemsOnErrors.push(item)
-            synchroErrorNum++
-          }
-        })
+      //       itemsOnErrors.push(item)
+      //       synchroErrorNum++
+      //     }
+      //   })
 
-        this.synchroService.itemsOnErrors = itemsOnErrors
+      //   this.synchroService.itemsOnErrors = itemsOnErrors
 
-        setTimeout(() => {
-          this.synchroService.onSynchroErrors.next(synchroErrorNum)
-        }, 2000);
+      //   setTimeout(() => {
+      //     this.synchroService.onSynchroErrors.next(synchroErrorNum)
+      //   }, 2000);
 
-        break;
+      //   break;
 
       case 417:
         if (error.error.datas && error.error.datas.length > 0) {
@@ -128,17 +127,12 @@ export class ErrorInterceptorService implements HttpInterceptor {
         break;
 
       default:
-        console.log("Oops, erreur inattendue. Veuillez communiquer cette erreur à votre administrateur.", errorStacktrace)
+        console.log("🚧 Oops, erreur inattendue. Veuillez communiquer cette erreur à votre administrateur.", errorStacktrace)
 
         break;
     }
-
-    console.error(
-      `Backend returned code ${error.status}, ` + `body was:`,
-      error.error
-    );
-
-    return throwError(() => error.error);
+    
+    return throwError(() => errorStacktrace);
   }
 }
 

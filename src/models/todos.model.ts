@@ -9,18 +9,33 @@ export interface Element {
     name: string;
 }
 
-export interface Flags extends FlagElement {
-    items: FlagElement[];
+export interface Flag {
+    id: string;
+    type: TypeSync;
+    status: StatusSync;
+    table: string;
 }
 
-export interface FlagElement {
+export interface Error {
     id: string;
-    status: StatusSync
+    flagId: string;
+    error: string;
+    message: string;
+    urlAPi: string | null;
+}
+
+export interface FlagErrors {
+    flag: Flag;
+    error: Error;
+}
+
+export enum TypeSync {
+    ADD = 'add',
+    MODIFY = 'modify',
 }
 
 export enum StatusSync {
-    ADD = 'add',
-    MODIFY = 'modify',
+    NOT_SYNC = 'not sync',
     ERROR = 'error',
 }
 
@@ -45,6 +60,11 @@ export interface AddTodoFrm {
     newTodoText: string;
 }
 
+export interface RegulFlagTable {
+    old: string;
+    new: string;
+}
+
 export enum ISynchroHttpError {
     SYNC_ERROR = 417,
 }
@@ -52,4 +72,9 @@ export enum ISynchroHttpError {
 export interface FakeHtppError {
     payload: any;
     status: ISynchroHttpError;
+}
+
+export interface linkTableUrl {
+    table: string;
+    url: string;
 }

@@ -1,10 +1,11 @@
 import Dexie, { Table } from 'dexie';
 
-import { Cacheable, DbItem, DbList, Flags, ListItems } from '../models/todos.model';
+import { Cacheable, DbItem, DbList, Error, Flag, ListItems } from '../models/todos.model';
 
 export class AppDB extends Dexie {
     lists!: Table<ListItems, string>;
-    flags!: Table<Flags, string>;
+    flags!: Table<Flag, string>;
+    errors!: Table<Error, number>;
     
     itemFlag!: Table<DbItem, number>;
     listFlag!: Table<DbList, number>;
@@ -12,15 +13,15 @@ export class AppDB extends Dexie {
 
     constructor() {
         super('PwaDb');
-        this.version(19).stores({
+        this.version(31).stores({
             lists: 'id, name',
-            flags: 'id, status',
-            // listFlag: 'id, recordType',
-            // itemFlag: 'id, listId, recordType, urlAPi, urlPage',
+            flags: 'id, type, status, table',
+            errors: '++id, flagId',
             cacheable: 'key',
         });
+
         // this.on('populate', () => this.populate());
-        this.on('populate', () => null);
+        // this.on('populate', () => null);
     }
 
     // async populate() {
@@ -45,12 +46,9 @@ export class AppDB extends Dexie {
 
     async resetDatabase() {
         await db.transaction('rw', 'todoItems', 'todoLists', 'cacheable', () => {
-            // this.listFlag.clear();
-            // this.itemFlag.clear();
             this.lists.clear();
             this.flags.clear();
             this.cacheable.clear();
-            // this.populate();
         });
     }
 }

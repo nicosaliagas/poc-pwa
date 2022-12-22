@@ -1,4 +1,10 @@
 {
+  "regul": [
+    {
+      "old": "****",
+      "new": "lists"
+    }
+  ],
   "selectTodos": [
     {
       "id": "c008eb2f-8286-4707-b42c-831b70bd8f70",
@@ -21,7 +27,7 @@
       "name": "Truffle Cups Green"
     }
   ],
-  "list": [
+  "lists": [
     {
       "id": "83D00680-FCCB-4233-B723-9D87089EAFA3",
       "name": "Lundi",
@@ -41,14 +47,6 @@
         {
           "id": "d12292f7-6518-4e1c-8700-942c58737aaf",
           "name": "Soup - Clam Chowder, Dry Mix"
-        },
-        {
-          "id": "b15a7e85-9ab0-6bea-8d27-ee535e47ecb9",
-          "name": "xxx"
-        },
-        {
-          "id": "0c8293e9-216f-7bf5-18f7-fa8faa5a23aa",
-          "name": "xxx2"
         }
       ]
     },
@@ -93,16 +91,6 @@
         {
           "id": "98b034ac-ca1c-4a77-87ea-d2a925c8d3c4",
           "name": "Mushroom - Chanterelle Frozen"
-        }
-      ]
-    },
-    {
-      "id": "55b09b12-c15d-340e-c98b-e47b3621f127",
-      "name": "Jeudi",
-      "items": [
-        {
-          "id": "49123806-a704-6a08-c0ba-fac32e9beaaf",
-          "name": "xxx1"
         }
       ]
     }

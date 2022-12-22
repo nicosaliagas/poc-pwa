@@ -4,15 +4,12 @@ import { BrowserModule } from '@angular/platform-browser';
 import { ServiceWorkerModule } from '@angular/service-worker';
 import { HttpService } from 'cocori-ng/src/feature-core';
 import { LoadEnvironmentFactory } from 'src/services/app-factory';
-import { CheckForUpdateService } from 'src/services/check-for-update.service';
-import { HandleUnrecoverableStateService } from 'src/services/handle-unrecoverable-state.service';
-import { PromptUpdateService } from 'src/services/prompt-update.service';
 
 import { environment } from '../environments/environment';
-import { DatasetsService } from '../services/datasets.service';
 import { EnvironmentLoaderService } from '../services/environment-loader.service';
 import { EnvironmentService } from '../services/environment.service';
 import { ErrorInterceptorService } from '../services/error-interceptor.service';
+import { ReguleAppService } from '../services/regule-app.service';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 
@@ -41,7 +38,7 @@ import { AppComponent } from './app.component';
     {
       provide: APP_INITIALIZER,
       useFactory: LoadEnvironmentFactory,
-      deps: [EnvironmentLoaderService, PromptUpdateService, DatasetsService, HandleUnrecoverableStateService, CheckForUpdateService, EnvironmentService],
+      deps: [EnvironmentLoaderService, ReguleAppService, EnvironmentService],
       multi: true
     },
   ],

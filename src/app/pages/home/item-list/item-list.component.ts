@@ -3,9 +3,9 @@ import { FormBuilder, FormGroup } from '@angular/forms';
 import { HelperService } from 'cocori-ng/src/feature-core';
 
 import { AddTodoFrm, Element, ListItems } from '../../../../models/todos.model';
+import { ApiService } from '../../../../services/api.service';
 import { CacheableService } from '../../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../../services/connection-status.service';
-import { CrudApiService } from '../../../../services/crud-api.service';
 import { DbService } from '../../../../services/db.service';
 
 @Component({
@@ -21,6 +21,8 @@ export class ItemListComponent {
   public defaultTodos: Element[] = []
   public connectionStatus!: IConnectionStatusValue;
   public itemName = 'My new item';
+  public tableName: string = 'lists';
+
   public formulaire!: FormGroup;
 
   constructor(
@@ -30,7 +32,7 @@ export class ItemListComponent {
     private crudDbService: DbService,
     private cacheableService: CacheableService,
     private connectionStatusService: ConnectionStatusService,
-    private crudApiService: CrudApiService,) { }
+    private crudApiService: ApiService,) { }
 
 
   ngOnInit(): void {
@@ -76,7 +78,7 @@ export class ItemListComponent {
     const id: string = value.newTodoId ? value.newTodoId : this.helperService.generateGuid()
     const text: string = value.newTodoId ? '' : value.newTodoText
 
-    await this.crudApiService.postItem(this.list.id, id, text)
+    await this.crudApiService.postItemList(this.tableName, this.list.id, id, text)
       .then(() => console.log("item ajouté!"))
       .catch(() => console.log("🤬 Fuck"))
 

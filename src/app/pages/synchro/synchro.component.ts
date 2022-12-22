@@ -1,6 +1,6 @@
-import { ChangeDetectionStrategy, Component, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 
-import { DbItem } from '../../../models/todos.model';
+import { DbItem, FlagErrors } from '../../../models/todos.model';
 import { SynchroService } from '../../../services/synchro.service';
 
 @Component({
@@ -11,14 +11,28 @@ import { SynchroService } from '../../../services/synchro.service';
 })
 export class SynchroComponent implements OnInit {
   public itemsOnErrors: DbItem[] = []
+  flagErrors: FlagErrors[] = [];
 
-  constructor(private synchroService: SynchroService) { }
+  constructor(
+    private synchroService: SynchroService,
+    private cdr: ChangeDetectorRef,
+  ) { }
 
   ngOnInit() {
-    this.itemsOnErrors = this.synchroService.itemsOnErrors
+    this.getFlagsOnErrors()
   }
 
-  identify(index: number, list: DbItem) {
-    return `${list.id}`;
+  private async getFlagsOnErrors() {
+    if (await this.synchroService.checkErrorsSync()) {
+      this.flagErrors = await this.synchroService.getErrorsFromFlags()
+      
+      console.log("Bon ben y a erreurs !!", this.flagErrors)
+
+      this.cdr.detectChanges()
+    }
+  }
+
+  identify(index: number, flagErrors: FlagErrors) {
+    return `${flagErrors.flag.id}`;
   }
 }

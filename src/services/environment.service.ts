@@ -1,30 +1,28 @@
 import { Injectable } from '@angular/core';
 
+import { linkTableUrl } from '../models/todos.model';
+
 export interface IConfigEnvironment {
     production: boolean;
-    CRUDCRUD_KEY: string;
     JSON_SERVER: string;
-    INIT_DATASETS: boolean;
+    LINKS_TABLES_URLS: linkTableUrl[];
 }
 
 @Injectable({
     providedIn: 'root',
 })
 export class EnvironmentService {
-    crudcrudKey: string;
     jsonServer: string;
-    init_datasets: boolean;
+    linksTablesUrls: linkTableUrl[];
 
 
     constructor() {
-        this.crudcrudKey = ''
         this.jsonServer = ''
-        this.init_datasets = false
+        this.linksTablesUrls = []
     }
 
     set conf(data: IConfigEnvironment) {
-        this.crudcrudKey = data.CRUDCRUD_KEY
         this.jsonServer = data.JSON_SERVER
-        this.init_datasets = data.INIT_DATASETS
+        this.linksTablesUrls = data.LINKS_TABLES_URLS
     }
 }

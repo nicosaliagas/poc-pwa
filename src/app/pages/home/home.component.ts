@@ -1,14 +1,16 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { HelperService, StringService } from 'cocori-ng/src/feature-core';
-import { CrudApiService } from 'src/services/crud-api.service';
+import { ApiService } from 'src/services/api.service';
 
-import { ListItems } from '../../../models/todos.model';
+import { Error, Flag, ListItems, StatusSync, TypeSync } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
+import { db } from '../../../services/db';
 import { DbService } from '../../../services/db.service';
 import { RequestQueueService } from '../../../services/request-queue.service';
-import { FAKE_ID, SynchroService } from '../../../services/synchro.service';
+import { SynchroTestService } from '../../../services/synchro-test.service';
+import { SynchroService } from '../../../services/synchro.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -18,25 +20,29 @@ import { FAKE_ID, SynchroService } from '../../../services/synchro.service';
 })
 export class HomeComponent implements OnInit {
   listName = 'My new list';
-  // todoLists: TodoList[] = [];
+  tableName: string = 'lists';
+
   connectionStatus!: IConnectionStatusValue;
   synchoRunning: boolean = false
+  isSynchroErrorLoaded: boolean = false
+  synchroErrorLoaded!: Error;
   synchoFail: boolean = false
-  paramsLoadSynchroFailed!: string
+  errorIdToLoad!: number
   notificationInfoMessage!: string
 
   constructor(
     private connectionStatusService: ConnectionStatusService,
     public requestQueueService: RequestQueueService,
-    public crudApiService: CrudApiService,
+    public crudApiService: ApiService,
     private cacheableService: CacheableService,
     private synchroService: SynchroService,
+    private synchroTestService: SynchroTestService,
     private route: ActivatedRoute,
     private helperService: HelperService,
-    private crudDbService: DbService,
+    private dbService: DbService,
     private cdr: ChangeDetectorRef,) {
     this.route.queryParams.subscribe((params: any) => {
-      this.paramsLoadSynchroFailed = params['load']
+      this.errorIdToLoad = params['load']
     })
   }
 
@@ -50,10 +56,6 @@ export class HomeComponent implements OnInit {
     this.crudApiService.onRefreshList.subscribe(() => {
       this.getListsDatas()
     })
-
-    // this.synchroService.onSynchroErrors.subscribe((itemsOnErrors: number) => {
-    //   this.synchoFail = itemsOnErrors > 0
-    // })
   }
 
   public async getListsDatas() {
@@ -63,61 +65,55 @@ export class HomeComponent implements OnInit {
     }
 
     /** on pagine ou pas la base pour filtrer la liste à afficher */
-    const datas = await this.crudDbService.paginateListsDB(-1, -1)
+    if (typeof this.errorIdToLoad === 'undefined') {
+      const datas = await this.dbService.paginateListsDB(-1, -1)
 
-    this.crudApiService.lists = datas
+      this.crudApiService.lists = datas
 
-    this.cdr.detectChanges()
-    // const datas = await this.cacheableService.getApiCacheable(() => this.crudApiService.GetListsItemsAPI(), 'listsItems', [])
-  }
-
-  /** Soumettre un post qui sera fail lors de la synchro */
-  public async submitFailPost() {
-    /** Liste existante mais item de liste todo inexistant en base */
-    await this.crudApiService.postItem("83D00680-FCCB-4233-B723-9D87089EAFA3", FAKE_ID, '')
-
-    console.log("🤡 callBadRequest ")
+      this.cdr.detectChanges()
+    }
   }
 
   /** On va vérifier s'il y a des éléments à synchroniser */
   private async changeConnectionStatus() {
-    /** la page est réinitialisée, la liste est vidée avant d'être affichée à nouveau */
-    this.crudApiService.lists.splice(0, this.crudApiService.lists.length)
 
-    this.cdr.detectChanges()
-
-    /** Pour les tests : on retire le fake item dans la liste déroulante */
-    // await this.synchroService.removeFakeItemSelect()
+    if (typeof this.errorIdToLoad === 'undefined') {
+      /** la page est réinitialisée, la liste est vidée avant d'être affichée à nouveau */
+      this.crudApiService.lists.splice(0, this.crudApiService.lists.length)
+  
+      this.cdr.detectChanges()
+    }
 
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-
-      /** Méthode via élément taggué dans IndexedDb */
       const anythingToSync: boolean = await this.synchroService.checkForSync()
 
       if (anythingToSync) {
-        /** il faut charger les infos mises en cache */
-        this.crudApiService.lists = await this.cacheableService.getCacheDatas('listsItems', [])
-
-        if (typeof this.paramsLoadSynchroFailed !== 'undefined') {
-          this.notificationInfoMessage =
-            `<strong>Synchronisation en erreur chargée !</strong>`
-
-          /** Pour les tests : on ajoute l'item manquant dans la liste déroulante */
-          // await this.synchroService.addFakeItemSelect()
-        } else {
-          this.notificationInfoMessage =
-            `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
-
-          await this.synchroIndexedDbToServer()
-        }
+        this.notificationInfoMessage =
+          `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
 
         this.synchoRunning = true
 
         this.cdr.detectChanges()
-      } else {
-        /** on récupère la liste déroulante des todos par défaut et on la met en cache */
-        await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+
+        await this.synchroService.syncFlagsToServer()
       }
+
+      /** Vérification des erreurs */
+      if (await this.synchroService.checkErrorsSync()) {
+        if (typeof this.errorIdToLoad !== 'undefined') {
+
+          this.synchroErrorLoaded = <Error>await db.errors.get(+this.errorIdToLoad)
+
+          this.isSynchroErrorLoaded = true
+        } else {
+          this.synchoFail = true
+        }
+
+        this.cdr.detectChanges()
+      }
+
+      /** on récupère la liste déroulante des todos par défaut et on la met en cache */
+      await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
 
       await this.getListsDatas()
 
@@ -133,6 +129,28 @@ export class HomeComponent implements OnInit {
     }
   }
 
+  /** Soumettre un post qui sera fail lors de la synchro : erreur DB, table inexistante*/
+  public async addDbSyncError() {
+    const anythingToSync: boolean = await this.synchroService.checkForSync()
+
+    if (!anythingToSync) window.alert(`Ajoute en offline, au moins un élément à synchroniser pour tester l'erreur...`)
+
+    let flagId = prompt("Id du flag à mettre en erreur: \n (F12 > Application > IndexedDb > Table flags)", "ex : 9152015b-70f9-2689-f815-0a79ae71b489");
+
+    await this.synchroTestService.addErrorSync(<string>flagId)
+  }
+
+  /** Soumettre un post qui sera fail lors de la synchro : erreur api 404*/
+  public async addApiSyncError() {
+    /** Ajouter une nouvelle liste dans la table lists*/
+    const newIdList: string = this.helperService.generateGuid()
+    const table: string = "lists"
+
+    await this.dbService.addElementDB(table, <ListItems>{ id: newIdList, name: "****", items: [] })
+
+    await this.dbService.addFlagsDB(<Flag>{ id: newIdList, status: StatusSync.NOT_SYNC, type: TypeSync.MODIFY, table: table })
+  }
+
   private sleep(ms: number) {
     return new Promise(resolve => setTimeout(resolve, ms));
   }
@@ -144,7 +162,7 @@ export class HomeComponent implements OnInit {
       .replaceAllAccentByNonAccentCharacters()
       .toString()
 
-    await this.crudApiService.postList(this.helperService.generateGuid(), this.listName)
+    await this.crudApiService.postElement(this.tableName, this.helperService.generateGuid(), this.listName)
       .then(() => console.log("liste ajoutée !"))
       .catch(() => console.log("🤬 Fuck"))
 
@@ -153,20 +171,8 @@ export class HomeComponent implements OnInit {
     this.getListsDatas()
   }
 
-  async resetLocalDatabase() {
-    await this.crudDbService.resetDatabase()
-
-    this.getListsDatas()
-  }
-
   identifyList(index: number, list: ListItems) {
     return `${list.id}${list.name}`;
-  }
-
-  private async synchroIndexedDbToServer() {
-    await this.synchroService.syncFlagsToServer()
-    // await this.synchroService.syncListsWithServer()
-    // await this.synchroService.syncItemsWithServer()
   }
 
   public fermerNotif() {

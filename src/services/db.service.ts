@@ -1,31 +1,35 @@
 import { Injectable } from '@angular/core';
 
-import { Flags, ListItems } from '../models/todos.model';
+import { Error, Flag, ListItems } from '../models/todos.model';
 import { db } from './db';
 
 @Injectable({
     providedIn: 'root'
 })
 export class DbService {
-    async addListDB(list: ListItems): Promise<any> {
-        return db.lists.add(list)
-    }
-    
-    async putListItem(list: ListItems): Promise<any> {
-        return db.lists.put(list)
-    }
-    
-    async addFlags(list: Flags): Promise<any> {
-        return db.flags.add(list)
+    async addElementDB(table: string, datas: any): Promise<any> {
+        return db.table(table).add(datas)
     }
 
-    async putFlags(list: Flags): Promise<any> {
-        return db.flags.put(list)
+    async putElementDB(table: string, datas: any): Promise<any> {
+        return db.table(table).put(datas)
+    }
+
+    async addFlagsDB(datas: Flag): Promise<any> {
+        return db.flags.add(datas)
+    }
+
+    async putFlagsDB(datas: Flag): Promise<any> {
+        return db.flags.put(datas)
     }
 
     /** doc : https://dexie.org/docs/Table/Table.bulkAdd() */
     async addListsDB(lists: ListItems[]): Promise<any> {
         return db.lists.bulkAdd(lists)
+    }
+
+    async addErrorsDB(datas: Error[]): Promise<any> {
+        return db.errors.bulkAdd(datas)
     }
 
     async resetDatabase(): Promise<any> {

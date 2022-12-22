@@ -1,10 +1,6 @@
-<!-- <div class="btnSynchro">
-    <button type="submit" (click)="sychronize()">🔁 Synchroniser</button>
-</div> -->
-
 <div class="btnSynchro">
-    <button type="submit" (click)="getListsDatas()">⬇️ Get all lists items</button>
-    <button type="submit" (click)="submitFailPost()">🚾 Soumettre un post en erreur</button>
+    <button type="submit" (click)="addApiSyncError()">🚾 Créer un flag en erreur (erreur api)</button>
+    <button type="submit" (click)="addDbSyncError()">🚾 Mettre en erreur un flag (erreur db)</button>
 </div>
 
 <div class="newListContainer" style="margin-top: 30px;">
@@ -23,16 +19,25 @@
     </div>
 </div>
 
-<div style="margin-top: 30px;">
-    <h3>Reset local Database</h3>
-    <button (click)="resetLocalDatabase()">Reset Local Database</button>
-</div>
-
 <!-- notification synchro en cours -->
 <div class="overlay-container" *ngIf="synchoRunning">
     <div class="global-wrapper">
         <div class="notif-container">
             <div class="alert alert-info" [innerHtml]="notificationInfoMessage">
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- notification erreur message -->
+<div class="overlay-container" *ngIf="isSynchroErrorLoaded">
+    <div class="global-wrapper">
+        <div class="notif-container">
+            <div class="alert alert-erreur">
+                <div class="item-list">
+                    <div>Erreur : {{synchroErrorLoaded.error}}</div>
+                    <div>Message : {{synchroErrorLoaded.message}}</div>
+                </div>                
             </div>
         </div>
     </div>

@@ -10,12 +10,6 @@ const routes: Routes = [
     data: { title: `Home` },
   },
   {
-    path: 'readonly',
-    loadChildren: () =>
-      import('./pages/readonly/readonly.module').then((mod) => mod.ReadonlyModule),
-    data: { title: `Page lecture seule` },
-  },
-  {
     path: 'synchro',
     loadChildren: () =>
       import('./pages/synchro/synchro.module').then((mod) => mod.SynchroModule),

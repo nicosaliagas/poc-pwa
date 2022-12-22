@@ -1,4 +1,10 @@
 {
+  "regul": [
+    {
+      "old": "****",
+      "new": "lists"
+    }
+  ],
   "selectTodos": [
     {
       "id": "c008eb2f-8286-4707-b42c-831b70bd8f70",
@@ -21,7 +27,7 @@
       "name": "Truffle Cups Green"
     }
   ],
-  "list": [
+  "lists": [
     {
       "id": "83D00680-FCCB-4233-B723-9D87089EAFA3",
       "name": "Lundi",
