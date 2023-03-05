@@ -1,6 +1,27 @@
-# PocPwa ✨
+# PocPwa
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 14.2.5.
+
+## ✨ Principales commandes :
+
+1. Lancer les commandes pour démarrer les serveurs :
+
+- Serveur de base de données : `npm run json-server`
+- Serveur http : `npm run server`
+
+2.1 Mode PWA :
+
+builder ses sources : `ng build`
+puis go : `https://localhost:8080`
+
+Variables d'environnement chargées : `appsettings.prod.json`
+
+2.2 Mode pas PWA :
+
+compile et lance le site : `ng serve -o`
+url de l'app : `https://localhost:2022`
+
+Variables d'environnement chargées : `appsettings.dev.json`
 
 ## Development server
 
@@ -12,7 +33,7 @@ Run `ng generate component component-name` to generate a new component. You can 
 
 ## Build
 
-✨ Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
+Run `ng build` to build the project. The build artifacts will be stored in the `dist/` directory.
 
 ## Update Angular CLI version Globally
 
@@ -52,25 +73,31 @@ http-server: a simple static HTTP server
 https://www.npmjs.com/package/http-server
 
 
-## Install package json-server : base donnée à partir d'un fichier json
+## base de données à partir d'un fichier json
 
-npm install -g json-server
+Install package json-server : `npm install -g json-server`
 
-Lancer le serveur  `json-server --watch C:\Users\nicos\Dev\poc\poc-pwa\src\assets\ressources\db.json` ou `npm run json-server`
+Lancer le serveur de base de données:
 
-Puis aller sur `http://localhost:3000` pour voir la base
+Run `npm run json-server` ou `json-server --watch C:\Users\nicos\Dev\poc\poc-pwa\src\assets\ressources\db.json`
+
+Fichiers ressources en public, dossier : `src\assets\ressources`
+
+Visiter `http://localhost:3000` pour voir/accéder à la base
 
 ## Launch server
 
 Run before : `ng build`
 
-http version :
-✨ Run `http-server -p 8080 -c-1 dist/poc-pwa` to launch the local server
+PWA : Lancer le serveur :
+
+http version
+Run `npm run server` ou `http-server -p 8080 -c-1 dist/poc-pwa` to launch the local server
 
 https version :
-✨ Run `http-server -p 8080 -c-1 dist/poc-pwa --cors --ssl -C .ssl/localhost.crt -K .ssl/localhost.key`
+Run `http-server -p 8080 -c-1 dist/poc-pwa --cors --ssl -C .ssl/localhost.crt -K .ssl/localhost.key`
 
-go sur `https://localhost:8080`
+=> => => => go sur `https://localhost:8080`
 
 - changement dans le code puis ng build
 - génère le livrable dans le dossier dist/ -> le serveur pointe vers ce dossier donc c'est comme s'il y avait eu livraison

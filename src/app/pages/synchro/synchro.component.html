@@ -1,16 +1,72 @@
-<div class="synchro-label">Synchronisations en erreur !</div>
+<ng-container *ngIf="flagErrors.length > 0">
+    <div class="synchro-label">Synchronisations en erreur !</div>
+
+    <div>
+        Nombres d'appels échoués : {{flagErrors.length}}
+    </div>
+
+    <div class="errors-list">
+        <div *ngFor="let flagError of flagErrors; trackBy: identify">
+            <div class="item-list">
+                <div>Erreur : {{flagError.error.error}}</div>
+                <div>Message : {{flagError.error.message}}</div>
+                <!-- <div class="item-access-link">
+                    <a class="link" [routerLink]="[flagError.error.id]" [queryParams]="{ load: flagError.error.id}">Accéder</a>
+                </div> -->
+            </div>
+        </div>
+    </div>
+</ng-container>
+
+<!-- Preview datas to sync with the back -->
 
 <div>
-    Nombres d'appels échoués : {{flagErrors.length}}
+
+    <table class="styled-table">
+        <thead>
+            <tr>
+                <th>Type de modification</th>
+                <th>Liste</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr *ngFor="let datas of previewSync; trackBy: trackPreview" (click)="selectRow(datas)">
+                <td>{{datas.flagType}}</td>
+                <td>{{datas.datasToSync.name}} ({{datas.datasToSync.items.length}})</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div *ngIf="datasPreviewRow">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Liste {{datasPreviewRow.datasToSync.name}}</th>
+                    <th>Items</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of datasPreviewRow.datasToSync.items; trackBy: trackPreviewItems">
+                    <td>&nbsp;</td>
+                    <td>{{item.name}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="btnSynchro">
+        <button [disabled]="!onlinemode" class="button-default button-style-sync" type="button"
+            (click)="synchronize()">Synchroniser</button>
+    </div>
 </div>
 
-<div class="errors-list">
-    <div *ngFor="let flagError of flagErrors; trackBy: identify">
-        <div class="item-list">
-            <div>Erreur : {{flagError.error.error}}</div>
-            <div>Message : {{flagError.error.message}}</div>
-            <div class="item-access-link">
-                <a class="link" [routerLink]="[flagError.error.id]" [queryParams]="{ load: flagError.error.id}">Accéder</a>
+<!-- Preview datas to sync with the back -->
+
+<!-- notification synchro en cours -->
+<div class="overlay-container" *ngIf="synchoRunning">
+    <div class="global-wrapper">
+        <div class="notif-container">
+            <div class="alert alert-info" [innerHtml]="notificationInfoMessage">
             </div>
         </div>
     </div>

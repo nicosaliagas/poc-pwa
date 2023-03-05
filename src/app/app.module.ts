@@ -9,6 +9,7 @@ import { environment } from '../environments/environment';
 import { EnvironmentLoaderService } from '../services/environment-loader.service';
 import { EnvironmentService } from '../services/environment.service';
 import { ErrorInterceptorService } from '../services/error-interceptor.service';
+import { PromptUpdateService } from '../services/prompt-update.service';
 import { ReguleAppService } from '../services/regule-app.service';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -38,7 +39,7 @@ import { AppComponent } from './app.component';
     {
       provide: APP_INITIALIZER,
       useFactory: LoadEnvironmentFactory,
-      deps: [EnvironmentLoaderService, ReguleAppService, EnvironmentService],
+      deps: [EnvironmentLoaderService, PromptUpdateService, ReguleAppService, EnvironmentService],
       multi: true
     },
   ],

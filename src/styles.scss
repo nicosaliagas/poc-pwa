@@ -1,1 +1,128 @@
-/* You can add global styles to this file, and also import other style files */
+/* CSS */
+
+/** Styles Notifications */
+
+.overlay-container {
+  position: fixed;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.global-wrapper {
+  justify-content: center;
+  align-items: flex-end;
+  display: flex;
+  position: absolute;
+  z-index: 1000;
+  pointer-events: none;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+.notif-container {
+  position: static;
+  margin-bottom: 0px;
+  display: flex;
+  z-index: 1000;
+  pointer-events: auto;
+}
+
+.alert {
+  margin-bottom: 20px;
+  box-shadow: 0 3px 5px -1px #0003, 0 6px 10px #00000024, 0 1px 18px #0000001f;
+  border-radius: 4px;
+  box-sizing: border-box;
+  display: block;
+  max-width: 33vw;
+  min-width: 344px;
+  padding: 14px 16px;
+  min-height: 48px;
+  transform-origin: center;
+  color: white;
+
+  &.alert-info {
+    background-color: #2196f3;
+  }
+
+  &.alert-erreur {
+    background-color: #ec4735;
+  }
+
+  .link {
+    color: #000;
+    font-size: 12px;
+  }
+}
+
+/** Styles Buttons */
+
+.button-default {
+  appearance: none;
+  background-color: #fafbfc;
+  border: 1px solid rgba(27, 31, 35, 0.15);
+  border-radius: 6px;
+  box-shadow: rgba(27, 31, 35, 0.04) 0 1px 0,
+    rgba(255, 255, 255, 0.25) 0 1px 0 inset;
+  box-sizing: border-box;
+  color: #24292e;
+  cursor: pointer;
+  display: inline-block;
+  font-family: -apple-system, system-ui, "Segoe UI", Helvetica, Arial,
+    sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  list-style: none;
+  padding: 6px 16px;
+  position: relative;
+  transition: background-color 0.2s cubic-bezier(0.3, 0, 0.5, 1);
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+  vertical-align: middle;
+  white-space: nowrap;
+  word-wrap: break-word;
+}
+
+.button-default:hover {
+  background-color: #f3f4f6;
+  text-decoration: none;
+  transition-duration: 0.1s;
+}
+
+.button-default:active {
+  background-color: #edeff2;
+  box-shadow: rgba(225, 228, 232, 0.2) 0 1px 0 inset;
+  transition: none 0s;
+}
+
+.button-default:focus {
+  outline: 1px transparent;
+}
+
+.button-default:before {
+  display: none;
+}
+
+.button-default:-webkit-details-marker {
+  display: none;
+}
+
+.button-style-sync {
+  background-color: #1976d2;
+  color: white;
+  box-shadow: none;
+
+  &:hover {
+    background-color: #0d71d5;
+  }
+  
+  &:disabled {
+    background-color: #d2d2d2;
+  }
+}

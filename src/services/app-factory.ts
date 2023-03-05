@@ -1,9 +1,11 @@
 import { EnvironmentLoaderService } from './environment-loader.service';
 import { EnvironmentService } from './environment.service';
+import { PromptUpdateService } from './prompt-update.service';
 import { ReguleAppService } from './regule-app.service';
 
 export function LoadEnvironmentFactory(
     environmentLoader: EnvironmentLoaderService,
+    promptUpdateService: PromptUpdateService,
     refactoUpdateService: ReguleAppService,
     environmentService: EnvironmentService,
 ) {

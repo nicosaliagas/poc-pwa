@@ -39,6 +39,11 @@ export enum StatusSync {
     ERROR = 'error',
 }
 
+export interface PreviewDatasToSync {
+    flagType: string;
+    datasToSync: any;
+}
+
 export interface DbList extends Element {
     recordType: string;
 }

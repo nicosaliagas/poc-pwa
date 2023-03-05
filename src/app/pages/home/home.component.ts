@@ -1,12 +1,11 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { HelperService, StringService } from 'cocori-ng/src/feature-core';
 import { ApiService } from 'src/services/api.service';
 
 import { Error, Flag, ListItems, StatusSync, TypeSync } from '../../../models/todos.model';
 import { CacheableService } from '../../../services/cacheable';
 import { ConnectionStatusService, IConnectionStatusValue } from '../../../services/connection-status.service';
-import { db } from '../../../services/db';
 import { DbService } from '../../../services/db.service';
 import { RequestQueueService } from '../../../services/request-queue.service';
 import { SynchroTestService } from '../../../services/synchro-test.service';
@@ -35,6 +34,7 @@ export class HomeComponent implements OnInit {
     public requestQueueService: RequestQueueService,
     public crudApiService: ApiService,
     private cacheableService: CacheableService,
+    private router: Router,
     private synchroService: SynchroService,
     private synchroTestService: SynchroTestService,
     private route: ActivatedRoute,
@@ -56,12 +56,26 @@ export class HomeComponent implements OnInit {
     this.crudApiService.onRefreshList.subscribe(() => {
       this.getListsDatas()
     })
+
+    // this.test()
+  }
+
+  private async test() {
+    if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
+      await this.synchroService.syncServerToDB()
+    }
   }
 
   public async getListsDatas() {
     /** appel serveur pour récupérer toutes les listes items */
     if (this.connectionStatusService.networkStatus === IConnectionStatusValue.ONLINE) {
       await this.synchroService.syncServerToDB()
+
+      if (await this.synchroService.checkErrorsSync() === false) {
+        this.synchoFail = false
+
+        this.cdr.detectChanges()
+      }
     }
 
     /** on pagine ou pas la base pour filtrer la liste à afficher */
@@ -80,50 +94,47 @@ export class HomeComponent implements OnInit {
     if (typeof this.errorIdToLoad === 'undefined') {
       /** la page est réinitialisée, la liste est vidée avant d'être affichée à nouveau */
       this.crudApiService.lists.splice(0, this.crudApiService.lists.length)
-  
+
       this.cdr.detectChanges()
     }
 
     if (this.connectionStatus === IConnectionStatusValue.ONLINE) {
-      const anythingToSync: boolean = await this.synchroService.checkForSync()
+      let anythingToSync: boolean = await this.synchroService.checkForSync()
+
+      // anythingToSync = false
 
       if (anythingToSync) {
-        this.notificationInfoMessage =
-          `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
+        // this.notificationInfoMessage =
+        //   `<strong>Synchronisation en cours !</strong> Les données de l'application se mettent à jour avec le serveur.`
+        // this.synchoRunning = true
+        // this.cdr.detectChanges()
+        // await this.synchroService.syncFlagsToServer()
 
-        this.synchoRunning = true
+        this.router.navigate(['/synchro']);
+      } else {
+        /** Vérification des erreurs */
+        /* if (await this.synchroService.checkErrorsSync()) {
+          if (typeof this.errorIdToLoad !== 'undefined') {
+            this.synchroErrorLoaded = <Error>await db.errors.get(+this.errorIdToLoad)
+            this.isSynchroErrorLoaded = true
+          } else {
+            this.synchoFail = true
+          }
+          this.cdr.detectChanges()
+        } */
+
+        /** on récupère la liste déroulante des todos par défaut et on la met en cache */
+        await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
+
+        await this.getListsDatas()
+
+        /* if (this.synchoRunning) {
+          await this.sleep(2000)
+          this.synchoRunning = false
+        } */
 
         this.cdr.detectChanges()
-
-        await this.synchroService.syncFlagsToServer()
       }
-
-      /** Vérification des erreurs */
-      if (await this.synchroService.checkErrorsSync()) {
-        if (typeof this.errorIdToLoad !== 'undefined') {
-
-          this.synchroErrorLoaded = <Error>await db.errors.get(+this.errorIdToLoad)
-
-          this.isSynchroErrorLoaded = true
-        } else {
-          this.synchoFail = true
-        }
-
-        this.cdr.detectChanges()
-      }
-
-      /** on récupère la liste déroulante des todos par défaut et on la met en cache */
-      await this.cacheableService.getApiCacheable(() => this.crudApiService.GetSelectTodos(), 'selectTodos', [])
-
-      await this.getListsDatas()
-
-      if (this.synchoRunning) {
-        await this.sleep(2000)
-
-        this.synchoRunning = false
-      }
-
-      this.cdr.detectChanges()
     } else {
       this.getListsDatas()
     }
@@ -177,5 +188,9 @@ export class HomeComponent implements OnInit {
 
   public fermerNotif() {
     this.synchoFail = false
+  }
+
+  public refreshPage() {
+    document.location.reload();
   }
 }

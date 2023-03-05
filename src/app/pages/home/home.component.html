@@ -1,6 +1,6 @@
 <div class="btnSynchro">
-    <button type="submit" (click)="addApiSyncError()">🚾 Créer un flag en erreur (erreur api)</button>
-    <button type="submit" (click)="addDbSyncError()">🚾 Mettre en erreur un flag (erreur db)</button>
+    <button class="button-default" type="submit" (click)="addApiSyncError()">Créer un flag en erreur (erreur api)</button>
+    <button class="button-default" type="submit" (click)="addDbSyncError()">Mettre en erreur un flag (erreur db)</button>
 </div>
 
 <div class="newListContainer" style="margin-top: 30px;">
@@ -9,7 +9,7 @@
         List :
         <input autocomplete="off" type="text" id="name" #name [(ngModel)]="listName" />
     </label>
-    <button type="submit" (click)="addNewList()">Add new list</button>
+    <button class="button-default" style="margin-left: 20px;" type="submit" (click)="addNewList()">Add new list</button>
 </div>
 
 
@@ -20,14 +20,14 @@
 </div>
 
 <!-- notification synchro en cours -->
-<div class="overlay-container" *ngIf="synchoRunning">
+<!-- <div class="overlay-container" *ngIf="synchoRunning">
     <div class="global-wrapper">
         <div class="notif-container">
             <div class="alert alert-info" [innerHtml]="notificationInfoMessage">
             </div>
         </div>
     </div>
-</div>
+</div> -->
 
 <!-- notification erreur message -->
 <div class="overlay-container" *ngIf="isSynchroErrorLoaded">
@@ -54,6 +54,7 @@
                 </div>
                 <div>
                     <a class="link" routerLink="/synchro">En savoir plus</a>
+                    <a class="link" (click)="refreshPage()" href="javascript:void(0)" style="padding-left: 5px;">Rafraichir la page</a>
                     <a class="link" href="javascript:void(0)" (click)="fermerNotif()" style="padding-left: 5px;">Fermer</a>
                 </div>
             </div>

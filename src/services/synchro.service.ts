@@ -3,11 +3,22 @@ import { Injectable } from '@angular/core';
 import { HelperService } from 'cocori-ng/src/feature-core';
 import { firstValueFrom } from 'rxjs';
 
-import { DbItem, Element, Error, Flag, FlagErrors, ListItems, StatusSync, TypeSync } from '../models/todos.model';
+import {
+    DbItem,
+    Element,
+    Error,
+    Flag,
+    FlagErrors,
+    ListItems,
+    PreviewDatasToSync,
+    StatusSync,
+    TypeSync,
+} from '../models/todos.model';
 import { ApiService } from './api.service';
 import { CacheableService } from './cacheable';
 import { db } from './db';
 import { DbService } from './db.service';
+import { DiffArrayService } from './diff-array.service';
 
 export const FAKE_ID: string = 'FAKE_ID'
 
@@ -20,6 +31,7 @@ export class SynchroService {
     constructor(
         private apiService: ApiService,
         private dbService: DbService,
+        private diffArrayService: DiffArrayService,
         private helperService: HelperService,
         private cacheableService: CacheableService) { }
 
@@ -33,15 +45,81 @@ export class SynchroService {
         return numberFlagLists > 0
     }
 
-    async syncServerToDB() {
-        await this.dbService.resetListTable()
-
-        const datasFromServer = await firstValueFrom(this.apiService.GetListsItemsAPI())
-
-        await this.dbService.addListsDB(datasFromServer)
+    private async getDbTableContent(tableName: string) {
+        return await db.table(tableName).toArray()
     }
 
-    private async getListByFlagId(flag: Flag) {
+    async syncServerToDB() {
+        let errorsSync: number = 0;
+        const datasFromServer: ListItems[] = await firstValueFrom(this.apiService.GetListsItemsAPI())
+
+        console.log("Before >> ", datasFromServer)
+
+        /** Prise en compte des items des listes */
+        const flagsToSync: Flag[] = await db.flags.where('type').equals(TypeSync.MODIFY).toArray()
+
+        await Promise.all(flagsToSync.map(async (flag: Flag) => {
+            console.log("flag >> ", flag)
+
+            /** get the right list items from the client database */
+            // const listsDb: ListItems[] = await db.table(flag.table).toArray()
+
+            const listsDb: ListItems[] = <ListItems[]>await this.getDbTableContent(flag.table).catch((error) => {
+                console.log("💀💀", error, flag.id)
+                errorsSync++
+            })
+
+            if (typeof listsDb !== 'undefined') {
+                const listIndexedDb: ListItems = <ListItems>listsDb.find((list: ListItems) => list.id === flag.id)
+
+                console.log(">> ", listsDb, listIndexedDb)
+
+                if (typeof listIndexedDb !== "undefined") {
+                    /** get the right list items from the server */
+                    const listServerDb: ListItems = <ListItems>datasFromServer.find((list: ListItems) => list.id === flag.id)
+
+                    if (typeof listServerDb === 'undefined' && flag.type === TypeSync.MODIFY) {
+                        console.log("💀💀 Identifiant inconnu, il n'existe plus côté serveur donc on supprime ?!... ", flag.id)
+
+                        /** suppression du flag et de l'erreur associée */
+                        await db.flags.where('id').equals(flag.id).delete();
+                        await db.errors.where('flagId').equals(flag.id).delete();
+                    } else {
+                        console.log("💩 server > ", listServerDb)
+                        console.log("🥰 client > ", listIndexedDb)
+
+                        const elementsToAddFromClientToServer: any[] = this.diffArrayService.getDifference(listIndexedDb.items, listServerDb.items)
+
+                        console.log("🤡 elementsToAddFromClientToServer > ", elementsToAddFromClientToServer)
+
+                        listServerDb.items = this.diffArrayService.combineTwoArrays(listServerDb.items, elementsToAddFromClientToServer)
+                    }
+                }
+            }
+        }))
+
+        /** Prise en compte nouvelles listes ajoutées en offline */
+
+        const flagsToAddToSync: Flag[] = await db.flags.where('type').equals(TypeSync.ADD).toArray()
+
+        console.log("flagsToAddToSync > ", flagsToAddToSync)
+
+        this.diffArrayService.combineTwoArrays(datasFromServer, flagsToAddToSync)
+
+        console.log("After >> ", datasFromServer)
+
+        console.log("errorsSync >>> ", errorsSync)
+
+        /** On écrase la base côté client avec la nouvelle liste fussionnée avec les flags si aucune erreur rencontrée */
+
+        if (!errorsSync) {
+            await this.dbService.resetListTable()
+
+            await this.dbService.addListsDB(datasFromServer)
+        }
+    }
+
+    private async getDatasFromTableByFlagId(flag: Flag) {
         return <ListItems>await db.table(flag.table).where('id').equals(flag.id).first()
     }
 
@@ -53,7 +131,7 @@ export class SynchroService {
 
             console.log(">>>>> ", flag)
 
-            const list: ListItems = <ListItems>await this.getListByFlagId(flag).catch((error) => {
+            const list: ListItems = <ListItems>await this.getDatasFromTableByFlagId(flag).catch((error) => {
                 console.log("💀💀", error, flag.id)
                 errors.push(<Error>{ flagId: flag.id, error: error.name, message: error.message, urlAPi: null })
             })
@@ -66,6 +144,7 @@ export class SynchroService {
                     await this.apiService.postElement(flag.table, list.id, list.name, list.items)
                         .then(async () => {
                             await db.flags.where('id').equals(flag.id).delete();
+                            await db.errors.where('flagId').equals(flag.id).delete();
                         })
                         .catch(({ dateError, httpError }: { dateError: string, httpError: HttpErrorResponse }) => {
                             console.log("💀💀 Apiadd ", httpError)
@@ -76,6 +155,7 @@ export class SynchroService {
                     await this.apiService.putElement(flag.table, list)
                         .then(async () => {
                             await db.flags.where('id').equals(flag.id).delete();
+                            await db.errors.where('flagId').equals(flag.id).delete();
                         })
                         .catch(({ dateError, httpError }: { dateError: string, httpError: HttpErrorResponse }) => {
                             console.log("💀💀 Apiput ", httpError)
@@ -86,6 +166,33 @@ export class SynchroService {
         }))
 
         await this.SaveErrorDB(errors)
+    }
+
+    async getPreviewSync(): Promise<PreviewDatasToSync[]> {
+        console.log("🎉 getFlagsBeforeSync")
+
+        const errors: Error[] = []
+        const flagsToSync: Flag[] = await db.flags.where('status').equals(StatusSync.NOT_SYNC).toArray()
+
+        let datas: any[] = []
+
+        await Promise.all(flagsToSync.map(async (flag: Flag) => {
+
+            console.log("Flag  >> ", flag)
+
+            const list: ListItems = <ListItems>await this.getDatasFromTableByFlagId(flag).catch((error) => {
+                console.log("💀💀", error, flag.id)
+                errors.push(<Error>{ flagId: flag.id, error: error.name, message: error.message, urlAPi: null })
+            })
+
+            console.log("List >> ", list)
+
+            datas.push(<PreviewDatasToSync>{ "flagType": flag.type, "datasToSync": list })
+        }))
+
+        await this.SaveErrorDB(errors)
+
+        return datas
     }
 
     private async SaveErrorDB(errors: Error[]) {

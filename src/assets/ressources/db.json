@@ -93,6 +93,29 @@
           "name": "Mushroom - Chanterelle Frozen"
         }
       ]
+    },
+    {
+      "id": "91422485-8901-555c-da5d-a2b060247812",
+      "name": "Jeudi",
+      "items": [
+        {
+          "id": "c8fbb7bb-0833-23c1-d580-7d3fba3c3a66",
+          "name": "XX"
+        },
+        {
+          "id": "be35530b-5e61-f358-cadd-f6de013c0254",
+          "name": "XX1"
+        },
+        {
+          "id": "11dcf37c-b582-f38e-881e-71c79abbc3aa",
+          "name": "XX2"
+        }
+      ]
+    },
+    {
+      "id": "9e1a25de-92c6-3513-f6ff-82eeedc40be9",
+      "name": "Vendredi",
+      "items": []
     }
   ]
 }
